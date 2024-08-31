@@ -1,65 +1,84 @@
 package com.work.demo.service;
+
 import ai.onnxruntime.*;
-import ch.qos.logback.core.net.SyslogOutputStream;
+import com.work.demo.service.utils.ImageUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.work.demo.rest.dto.ObjectDetectionContainer;
 import com.work.demo.rest.dto.ObjectDetectionResult;
-import com.work.demo.service.utils.ImageUtils;
 
+
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 @Service
 public class ObjectDetectionService {
 
 /**
- * public List<ObjectDetectionContainer> performObjectDetection(MultipartFile imageFile) {
- *     List<ObjectDetectionResult> results=new ArrayList<>();
- *
- *     try {
- *         // Cargar el modelo ONNX
- *         OrtEnvironment env=OrtEnvironment.getEnvironment();
- *         String modelPath="C:\\Users\\user\\Desktop\\pruebasYolo\\RESULTS\\VehiclesTest\\weights.onnx";
- *         OrtSession.SessionOptions opts=new OrtSession.SessionOptions();
- *         OrtSession session=env.createSession(modelPath, opts);
- *
- *         // Leer la imagen desde el MultipartFile
- *         BufferedImage image=ImageUtils.convertMultipartFileToBufferedImage(imageFile);
- *
- *         // Preprocesar la imagen según sea necesario
- *
- *         // Convertir la imagen a un tensor de entrada
- *         float[][][] inputData=ImageUtils.convertImageTo3DFloatArray(image);
- *         long[] inputShape=new long[]{1, 3, image.getHeight(), image.getWidth()}; // Forma del tensor de entrada
- *         OnnxTensor inputTensor=OnnxTensor.createTensor(env, inputData, inputShape);
- *
- *         // Crear el mapa de entradas para el modelo
- *         Map<String, OnnxTensor> inputs=Collections.singletonMap("input", inputTensor);
- *
- *         // Ejecutar la sesión y obtener todas las salidas
- *         OrtSession.Result result=session.run(inputs);
- *
- *         // Procesar los resultados de detección de objetos
- *         for (Map.Entry<String, OnnxValue> entry : result) {
- *             if (entry.getValue() instanceof OnnxTensor) {
- *                 OnnxTensor outputTensor=(OnnxTensor) entry.getValue();
- *                 float[][][] outputData=(float[][][]) outputTensor.getValue();
- *
- *                 // Convertir los resultados a la estructura ObjectDetectionResult
- *                 // y añadirlos a la lista results
- *             }
- *         }
- *
- *     } catch (OrtException e) {
- *         System.err.println("Error al cargar el modelo ONNX: " + e.getMessage());
- *     } catch (IOException e) {
- *         System.err.println("Error al leer la")
- *     }
- * }
- *
 
+ List<ObjectDetectionContainer> detectionContainers = new ArrayList<>();
+
+ try {
+ // Guardar el archivo MultipartFile a una ubicación temporal
+ File tempFile = File.createTempFile("uploaded", ".jpg");
+ imageFile.transferTo(tempFile);
+
+ // Cargar la imagen desde el archivo temporal
+ Mat image = Imgcodecs.imread(tempFile.getAbsolutePath());
+
+ // Cargar el modelo ONNX
+ String modelPath = "C:/Users/eii/Desktop/prueba/best.onnx";
+ Net net = Dnn.readNetFromONNX(modelPath);
+
+ // Preprocesar la imagen
+ Mat blob = Dnn.blobFromImage(image, 1.0 / 255.0, new Size(640, 640), new Scalar(0, 0, 0), true, false);
+
+ // Establecer el blob como input de la red
+ net.setInput(blob);
+
+ // Realizar la detección
+ Mat output = net.forward();
+
+ // Procesar las salidas
+ for (int i = 0; i < output.size(2); i++) {
+ double confidence = output.get(0, i)[4];  // Confianza de la detección
+ if (confidence > 0.5) {
+ double[] data = output.get(0, i);
+
+ // Las coordenadas de la caja delimitadora
+ double x = data[0] * image.cols();
+ double y = data[1] * image.rows();
+ double width = data[2] * image.cols();
+ double height = data[3] * image.rows();
+
+ // Crear un contenedor de detección
+ ObjectDetectionResult detectionResult = new ObjectDetectionResult(x, y, width, height, confidence);
+ ObjectDetectionContainer container = new ObjectDetectionContainer();
+ container.addObjectDetectionResult(detectionResult);
+ detectionContainers.add(container);
+
+ // Dibujar la caja delimitadora en la imagen
+ Point topLeft = new Point(x - width / 2, y - height / 2);
+ Point bottomRight = new Point(x + width / 2, y + height / 2);
+ Imgproc.rectangle(image, topLeft, bottomRight, new Scalar(0, 255, 0), 2);
+
+ // (Opcional) Guardar la imagen con las detecciones para verificación
+ Imgcodecs.imwrite("C:/Users/eii/Desktop/prueba/a_out.jpg", image);
+ }
+ }
+
+ // Eliminar el archivo temporal
+ tempFile.delete();
+
+ } catch (IOException e) {
+ e.printStackTrace();
+ }
+
+ return detectionContainers;
  **/
 public List<ObjectDetectionContainer> performObjectDetection(MultipartFile imageFile) {
     List<ObjectDetectionResult> results = new ArrayList<>();
@@ -67,81 +86,66 @@ public List<ObjectDetectionContainer> performObjectDetection(MultipartFile image
     try {
         // Cargar el modelo ONNX
         OrtEnvironment env = OrtEnvironment.getEnvironment();
-        OrtSession session = env.createSession("C:\\Users\\user\\Desktop\\pruebasYolo\\RESULTS\\VehiclesTest\\weights\\best.onnx", new OrtSession.SessionOptions());
+        OrtSession session = env.createSession("C:\\Users\\user\\Desktop\\wsPagWeb\\trainsExitosos\\conesTrain\\weights\\best.onnx", new OrtSession.SessionOptions());
 
         // Leer la imagen desde el MultipartFile
-        BufferedImage image = ImageUtils.convertMultipartFileToBufferedImage(imageFile);
-
-        // Preprocesar la imagen según sea necesario
+        BufferedImage image = resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
 
         // Convertir la imagen a un tensor de entrada
         float[][][][] inputData = ImageUtils.convertImageTo4DFloatArray(image);
-        System.out.println(inputData);
-        //long[] inputShape = new long[]{1, 3, image.getHeight(), image.getWidth()}; // Forma del tensor de entrada
-
-        // Crear el input tensor
-        OnnxTensor inputTensor =OnnxTensor.createTensor(env, inputData);
+        OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputData);
         Map<String, OnnxTensorLike> inputs = Collections.singletonMap("images", inputTensor);
-        Set<String> outputNames = new HashSet<>(); // Vacío para obtener todas las salidas
+
         // Realizar la inferencia
-        OrtSession.Result result = session.run(inputs );//,outputNames
-        OnnxTensor outputTensor =(OnnxTensor) result.get("output0").get();
+        OrtSession.Result result = session.run(inputs);
+        OnnxTensor outputTensor = (OnnxTensor) result.get("output0").get();
         float[][][] outputData = (float[][][]) outputTensor.getValue();
-        for (float[][] detection : outputData) {
-            float[] box = detection[0]; // Coordenadas de la caja [x1, y1, x2, y2]
-            float[] scores = detection[1]; // Puntuaciones para cada clase
-            int classId = argMax(scores); // Clase con mayor puntuación
-            float confidence = scores[classId]; // Confianza de la clase
+        long[] outputShape = outputTensor.getInfo().getShape();
+        System.out.println("Forma del tensor de salida: " + Arrays.toString(outputShape));
 
-            if (confidence > 0.5) { // Umbral de confianza
-                System.out.println("Detectado vehículo con confianza: " + confidence);
-                System.out.println("Caja delimitadora: " + Arrays.toString(box));
-            }
-        }
-        //float[][][][] outputData = (float[][][][]) outputTensor.getValue();
-        for (int i = 0; i < outputData.length; i++) {  // outputData.length debería ser 1 (el tamaño del lote)
-            for (int j = 0; j < outputData[i].length; j++) {  // outputData[i].length debería ser 8400 (el número de detecciones)
-                float[] detection = outputData[i][j];  // Cada detección tiene 5 características
+        // Procesar la salida del tensor
+        for (int i = 0; i < outputData.length; i++) {
+            for (int j = 0; j < outputData[i][0].length; j++) {
+                // Asumiendo que la salida está en la forma [1, 5, 8400]
+                // Descomponemos las 5 características
+                float cx = outputData[i][0][j];
+                float cy = outputData[i][1][j];
+                float width = outputData[i][2][j];
+                float height = outputData[i][3][j];
+                float confidence = outputData[i][4][j];
 
-                // Suponiendo que detection[0:3] son las coordenadas y detection[4] es la confianza
-                float confidence = detection[4]; // La confianza de la detección
+                // Filtrar por confianza
+                if (confidence > 0.5) {
+                    // Convertir de coordenadas centrales a esquinas
+                    float x1 = cx - width / 2;
+                    float y1 = cy - height / 2;
+                    float x2 = cx + width / 2;
+                    float y2 = cy + height / 2;
 
-                if (confidence > 0.5) { // Filtrar detecciones de baja confianza
-                    // Interpretar las coordenadas del cuadro delimitador
-                    float x = detection[0];
-                    float y = detection[1];
-                    float width = detection[2];
-                    float height = detection[3];
+                    System.out.println("Detectado objeto con confianza: " + confidence);
+                    System.out.println("Caja delimitadora: " + Arrays.toString(new float[]{x1, y1, x2, y2}));
 
-                    // Crear un objeto resultado de detección
-                    ObjectDetectionResult detectionResult = new ObjectDetectionResult(x, y, width, height, confidence);
+                    // Crear el objeto de resultado de detección
+                    ObjectDetectionResult detectionResult = new ObjectDetectionResult(x1, y1, x2, y2, confidence);
                     results.add(detectionResult);
                 }
             }
         }
+
         // Liberar los recursos
         inputTensor.close();
         outputTensor.close();
         session.close();
         env.close();
-        //  float[][] outputData = (float[][]) result.get(0).getValue();
-
-        // Postprocesamiento de los resultados
-        // Aquí deberías interpretar las salidas del modelo y procesar los resultados según sea necesario
-        // Por ejemplo, iterar sobre las salidas y crear objetos ObjectDetectionResult con las etiquetas y confianzas
-
-        //   for (float[] detection : outputData) {
-            //   String label = "Label"; // Reemplazar con la lógica real para obtener la etiqueta del objeto
-            //     float confidence = detection[0]; // Por ejemplo, supongamos que la primera salida es la confianza
-            // results.add(new ObjectDetectionResult(label, confidence));
-        //}
 
     } catch (OrtException | IOException e) {
         e.printStackTrace();
     }
-    ObjectDetectionContainer cont=new ObjectDetectionContainer();
+
+    // Envolver los resultados en un contenedor
+    ObjectDetectionContainer cont = new ObjectDetectionContainer();
     cont.setObjects(results);
-    List<ObjectDetectionContainer> l=new ArrayList<>();
+    List<ObjectDetectionContainer> l = new ArrayList<>();
     l.add(cont);
     return l;
 }
@@ -155,6 +159,13 @@ public List<ObjectDetectionContainer> performObjectDetection(MultipartFile image
             }
         }
         return maxIndex;
+    }
+    public static BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
+        BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, originalImage.getType());
+        Graphics2D g = resizedImage.createGraphics();
+        g.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
+        g.dispose();
+        return resizedImage;
     }
 }
 

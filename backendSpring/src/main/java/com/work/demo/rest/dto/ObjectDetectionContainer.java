@@ -11,4 +11,9 @@ import java.util.List;
 public class ObjectDetectionContainer {
     private List<ObjectDetectionResult> objects;
     private int quantity;
+
+    public void addObjectDetectionResult (ObjectDetectionResult detectionResult) {
+        objects.add(detectionResult);
+        quantity++;
+    }
 }
