@@ -8,6 +8,7 @@ import com.work.demo.rest.dto.ObjectDetectionContainer;
 import com.work.demo.rest.dto.ObjectDetectionResult;
 
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -88,7 +89,7 @@ public class ObjectDetectionService {
             OrtEnvironment env = OrtEnvironment.getEnvironment();
             OrtSession session = env.createSession("C:\\Users\\user\\Desktop\\wsPagWeb\\trainsExitosos\\conesTrain\\weights\\best.onnx", new OrtSession.SessionOptions());
 
-            // Leer la imagen desde el MultipartFile
+            // Leer la imagen desde el MultipartFile y redimensionarla
             BufferedImage image = resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
 
             // Convertir la imagen a un tensor de entrada
@@ -138,9 +139,23 @@ public class ObjectDetectionService {
                 System.out.println("Caja delimitadora: " + Arrays.toString(bestBox));
 
                 ObjectDetectionResult detectionResult = new ObjectDetectionResult(
-                        bestBox[0], bestBox[1], bestBox[2], bestBox[3], bestConfidence,"Cono"
+                        bestBox[0], bestBox[1], bestBox[2], bestBox[3], bestConfidence, "Cono"
                 );
                 results.add(detectionResult);
+
+                // Dibujar el recuadro en la imagen
+                Graphics2D graphics = image.createGraphics();
+                graphics.setColor(Color.RED);
+                graphics.setStroke(new java.awt.BasicStroke(3));
+                graphics.drawRect((int) bestBox[0], (int) bestBox[1], (int) (bestBox[2] - bestBox[0]), (int) (bestBox[3] - bestBox[1]));
+                graphics.dispose();
+
+                // Guardar la imagen con el recuadro en el disco
+                String outputImagePath = "C:\\Users\\user\\Desktop\\detected_image.jpg";
+                File outputfile = new File(outputImagePath);
+                ImageIO.write(image, "jpg", outputfile);
+
+                System.out.println("Imagen guardada en: " + outputImagePath);
             }
 
             // Liberar los recursos
