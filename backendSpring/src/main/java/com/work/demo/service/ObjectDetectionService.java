@@ -80,75 +80,86 @@ public class ObjectDetectionService {
 
  return detectionContainers;
  **/
-public List<ObjectDetectionContainer> performObjectDetection(MultipartFile imageFile) {
-    List<ObjectDetectionResult> results = new ArrayList<>();
+    public List<ObjectDetectionContainer> performObjectDetection(MultipartFile imageFile) {
+        List<ObjectDetectionResult> results = new ArrayList<>();
 
-    try {
-        // Cargar el modelo ONNX
-        OrtEnvironment env = OrtEnvironment.getEnvironment();
-        OrtSession session = env.createSession("C:\\Users\\user\\Desktop\\wsPagWeb\\trainsExitosos\\conesTrain\\weights\\best.onnx", new OrtSession.SessionOptions());
+        try {
+            // Cargar el modelo ONNX
+            OrtEnvironment env = OrtEnvironment.getEnvironment();
+            OrtSession session = env.createSession("C:\\Users\\user\\Desktop\\wsPagWeb\\trainsExitosos\\conesTrain\\weights\\best.onnx", new OrtSession.SessionOptions());
 
-        // Leer la imagen desde el MultipartFile
-        BufferedImage image = resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
+            // Leer la imagen desde el MultipartFile
+            BufferedImage image = resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
 
-        // Convertir la imagen a un tensor de entrada
-        float[][][][] inputData = ImageUtils.convertImageTo4DFloatArray(image);
-        OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputData);
-        Map<String, OnnxTensorLike> inputs = Collections.singletonMap("images", inputTensor);
+            // Convertir la imagen a un tensor de entrada
+            float[][][][] inputData = ImageUtils.convertImageTo4DFloatArray(image);
+            OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputData);
+            Map<String, OnnxTensorLike> inputs = Collections.singletonMap("images", inputTensor);
 
-        // Realizar la inferencia
-        OrtSession.Result result = session.run(inputs);
-        OnnxTensor outputTensor = (OnnxTensor) result.get("output0").get();
-        float[][][] outputData = (float[][][]) outputTensor.getValue();
-        long[] outputShape = outputTensor.getInfo().getShape();
-        System.out.println("Forma del tensor de salida: " + Arrays.toString(outputShape));
+            // Realizar la inferencia
+            OrtSession.Result result = session.run(inputs);
+            OnnxTensor outputTensor = (OnnxTensor) result.get("output0").get();
+            float[][][] outputData = (float[][][]) outputTensor.getValue();
+            long[] outputShape = outputTensor.getInfo().getShape();
+            System.out.println("Forma del tensor de salida: " + Arrays.toString(outputShape));
 
-        // Procesar la salida del tensor
-        for (int i = 0; i < outputData.length; i++) {
-            for (int j = 0; j < outputData[i][0].length; j++) {
-                // Asumiendo que la salida está en la forma [1, 5, 8400]
-                // Descomponemos las 5 características
-                float cx = outputData[i][0][j];
-                float cy = outputData[i][1][j];
-                float width = outputData[i][2][j];
-                float height = outputData[i][3][j];
-                float confidence = outputData[i][4][j];
+            // Procesar la salida del tensor
+            float bestConfidence = 0.0f;
+            float[] bestBox = null;
 
-                // Filtrar por confianza
-                if (confidence > 0.5) {
-                    // Convertir de coordenadas centrales a esquinas
-                    float x1 = cx - width / 2;
-                    float y1 = cy - height / 2;
-                    float x2 = cx + width / 2;
-                    float y2 = cy + height / 2;
+            for (int i = 0; i < outputData.length; i++) {
+                for (int j = 0; j < outputData[i][0].length; j++) {
+                    // Descomponemos las 5 características
+                    float cx = outputData[i][0][j];
+                    float cy = outputData[i][1][j];
+                    float width = outputData[i][2][j];
+                    float height = outputData[i][3][j];
+                    float confidence = outputData[i][4][j];
 
-                    System.out.println("Detectado objeto con confianza: " + confidence);
-                    System.out.println("Caja delimitadora: " + Arrays.toString(new float[]{x1, y1, x2, y2}));
+                    // Filtrar por confianza y buscar la detección con mayor confianza
+                    if (confidence > bestConfidence) {
+                        bestConfidence = confidence;
 
-                    // Crear el objeto de resultado de detección
-                    ObjectDetectionResult detectionResult = new ObjectDetectionResult(x1, y1, x2, y2, confidence);
-                    results.add(detectionResult);
+                        // Convertir de coordenadas centrales a esquinas
+                        float x1 = cx - width / 2;
+                        float y1 = cy - height / 2;
+                        float x2 = cx + width / 2;
+                        float y2 = cy + height / 2;
+
+                        // Actualizar la mejor caja delimitadora
+                        bestBox = new float[]{x1, y1, x2, y2};
+                    }
                 }
             }
+
+            // Almacenar la mejor detección si tiene suficiente confianza
+            if (bestConfidence > 0.5) {
+                System.out.println("Mejor detección con confianza: " + bestConfidence);
+                System.out.println("Caja delimitadora: " + Arrays.toString(bestBox));
+
+                ObjectDetectionResult detectionResult = new ObjectDetectionResult(
+                        bestBox[0], bestBox[1], bestBox[2], bestBox[3], bestConfidence,"Cono"
+                );
+                results.add(detectionResult);
+            }
+
+            // Liberar los recursos
+            inputTensor.close();
+            outputTensor.close();
+            session.close();
+            env.close();
+
+        } catch (OrtException | IOException e) {
+            e.printStackTrace();
         }
 
-        // Liberar los recursos
-        inputTensor.close();
-        outputTensor.close();
-        session.close();
-        env.close();
-
-    } catch (OrtException | IOException e) {
-        e.printStackTrace();
+        // Envolver los resultados en un contenedor
+        ObjectDetectionContainer cont = new ObjectDetectionContainer();
+        cont.setObjects(results);
+        List<ObjectDetectionContainer> l = new ArrayList<>();
+        l.add(cont);
+        return l;
     }
-
-    // Envolver los resultados en un contenedor
-    ObjectDetectionContainer cont = new ObjectDetectionContainer();
-    cont.setObjects(results);
-    List<ObjectDetectionContainer> l = new ArrayList<>();
-    l.add(cont);
-    return l;
-}
 
     // Método para encontrar el índice del valor máximo en un array
     public static int argMax(float[] scores) {

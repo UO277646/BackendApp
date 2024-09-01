@@ -14,4 +14,5 @@ public class ObjectDetectionResult {
     private double height;
 
     private double confidence;
+    private String label;
 }

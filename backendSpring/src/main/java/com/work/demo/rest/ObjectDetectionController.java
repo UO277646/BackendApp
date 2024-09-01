@@ -25,10 +25,10 @@ public class ObjectDetectionController {
         // objectList.add(new ObjectDetectionResult("Bicycle", 0.80f));
         //  objectList.add(new ObjectDetectionResult("Cat", 0.75f));
 
-        ObjectDetectionContainer container = new ObjectDetectionContainer(objectList,5);
+        //ObjectDetectionContainer container = new ObjectDetectionContainer(objectList,5);
 
         List<ObjectDetectionContainer> results = performObjectDetection(image);//new ArrayList<>();
-        results.add(container);
+        //results.add(container);
         return results;
     }
     @GetMapping("/list")
