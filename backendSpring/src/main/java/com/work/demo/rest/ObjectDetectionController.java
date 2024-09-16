@@ -1,6 +1,7 @@
 package com.work.demo.rest;
 
 import com.work.demo.rest.dto.ObjectDetectionResult;
+import com.work.demo.service.DeteccionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,20 +16,16 @@ import java.util.List;
 public class ObjectDetectionController {
     @Autowired
     private ObjectDetectionService obj;
+    @Autowired
+    private DeteccionService deteccionService;
     @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/detect")
     public List<ObjectDetectionContainer> detectObjects(@RequestParam("image") MultipartFile image) {
         List<ObjectDetectionResult> objectList = new ArrayList<>();
-      //  objectList.add(new ObjectDetectionResult("Person", 0.95f));
-        //  objectList.add(new ObjectDetectionResult("Dog", 0.90f));
-        //  objectList.add(new ObjectDetectionResult("Car", 0.85f));
-        // objectList.add(new ObjectDetectionResult("Bicycle", 0.80f));
-        //  objectList.add(new ObjectDetectionResult("Cat", 0.75f));
-
-        //ObjectDetectionContainer container = new ObjectDetectionContainer(objectList,5);
-
-        List<ObjectDetectionContainer> results = performObjectDetection(image);//new ArrayList<>();
-        //results.add(container);
+        if(deteccionService.checkToday()){
+            throw new RuntimeException("Hoy ya se ha subido foto");
+        }
+        List<ObjectDetectionContainer> results = performObjectDetection(image);
         return results;
     }
     @GetMapping("/list")
@@ -44,7 +41,7 @@ public class ObjectDetectionController {
         // Aquí es donde se realizaría la detección de objetos utilizando ONNX Runtime Java
         // Procesar la imagen, cargar el modelo ONNX y obtener los resultados de detección
 
-        return obj.performObjectDetection(image);
+        return obj.performConeDetection(image);
     }
 }
 
