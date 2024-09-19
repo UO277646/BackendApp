@@ -60,11 +60,11 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Spring Security si necesitas añadir seguridad en tu aplicación -->
-		<dependency>
+		<!-- Spring Security si necesitas añadir seguridad en tu aplicación <dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
+		</dependency>-->
+
 
 	</dependencies>
 
