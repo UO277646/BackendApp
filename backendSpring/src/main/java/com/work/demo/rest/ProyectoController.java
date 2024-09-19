@@ -32,7 +32,7 @@ public class ProyectoController {
         return convertirAProyectoApiDto(proyecto);
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
+    //@CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/create")
     public ProyectoApiDto createProyecto(@RequestBody ProyectoApiDto proyectoApiDto) {
         ProyectoServiceDto proyectoDto = convertirAProyectoServiceDto(proyectoApiDto);
