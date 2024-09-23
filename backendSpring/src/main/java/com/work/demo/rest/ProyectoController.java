@@ -1,7 +1,11 @@
 package com.work.demo.rest;
+import com.work.demo.rest.dto.FotoApiDto;
 import com.work.demo.rest.dto.ProyectoApiDto;
+import com.work.demo.rest.dto.RestriccionApiDto;
 import com.work.demo.service.ProyectoService;
+import com.work.demo.service.dto.FotoServiceDto;
 import com.work.demo.service.dto.ProyectoServiceDto;
+import com.work.demo.service.dto.RestriccionServiceDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +19,6 @@ public class ProyectoController {
     @Autowired
     private ProyectoService proyectoService;
 
-    @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/find/all")
     public List<ProyectoApiDto> getAllProyectos() {
         List<ProyectoServiceDto> proyectos = proyectoService.findAll();
@@ -25,7 +28,25 @@ public class ProyectoController {
                 .collect(Collectors.toList());
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
+    @GetMapping("/find/detecciones/{id}")
+    public List<FotoApiDto> getProyectDetections(@PathVariable Long id) {
+        List<FotoServiceDto> fotos = proyectoService.findDetect(id);
+        return fotos.stream()
+                .map(fotoServiceDto -> new FotoApiDto(fotoServiceDto.getFechaCreacion(), fotoServiceDto.getCantidad()))
+                .collect(Collectors.toList());
+    }
+    @GetMapping("/find/restricciones/{id}")
+    public List<RestriccionApiDto> getProyectRestrictions(@PathVariable Long id) {
+        List<RestriccionServiceDto> restricciones = proyectoService.findRestrict(id);
+        // Convertimos de RestriccionServiceDto a RestriccionApiDto
+        return restricciones.stream()
+                .map(restriccion -> new RestriccionApiDto(restriccion.getIdRestriccion(),
+                        restriccion.getObjeto(),
+                        restriccion.getFechaDesde(),
+                        restriccion.getFechaHasta(),restriccion.getCantidad()))
+                .collect(Collectors.toList());
+    }
+
     @GetMapping("/find/{id}")
     public ProyectoApiDto getProyectoById(@PathVariable Long id) {
         ProyectoServiceDto proyecto = proyectoService.obtenerProyectoPorId(id);
@@ -40,7 +61,6 @@ public class ProyectoController {
         return convertirAProyectoApiDto(nuevoProyecto);
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
     @PutMapping("/update/{id}")
     public ProyectoApiDto updateProyecto(@PathVariable Long id, @RequestBody ProyectoApiDto proyectoApiDto) {
         ProyectoServiceDto proyectoDto = convertirAProyectoServiceDto(proyectoApiDto);
@@ -48,7 +68,6 @@ public class ProyectoController {
         return convertirAProyectoApiDto(proyectoActualizado);
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
     @DeleteMapping("/delete/{id}")
     public void deleteProyecto(@PathVariable Long id) {
         proyectoService.eliminarProyecto(id);

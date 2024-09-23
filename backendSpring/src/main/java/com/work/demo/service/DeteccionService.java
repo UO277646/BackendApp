@@ -6,6 +6,7 @@ import com.work.demo.service.dto.DeteccionServiceDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -144,5 +145,10 @@ public class DeteccionService {
         } catch (Exception e) {
             throw new RuntimeException("Error al comprobar las detecciones de hoy", e);
         }
+    }
+
+    public List<DeteccionServiceDto> findByFotoId (Date fotoId) {
+        // Llama al repositorio para buscar las detecciones por fotoId
+        return deteccionRepository.findDetectionsByFotoId(fotoId);
     }
 }

@@ -6,6 +6,7 @@ import com.work.demo.service.dto.DeteccionServiceDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,8 +16,23 @@ public class DeteccionController {
 
     @Autowired
     private DeteccionService deteccionService;
-
-    @CrossOrigin(origins = "http://localhost:4200")
+    @GetMapping("/find/foto/{fotoId}")
+    public List<DeteccionApiDto> getDetectionsByFotoId(@PathVariable Date fotoId) {
+        List<DeteccionServiceDto> detecciones = deteccionService.findByFotoId(fotoId);
+        // Convertimos de DeteccionServiceDto a DeteccionApiDto
+        return detecciones.stream()
+                .map(deteccion -> new DeteccionApiDto(deteccion.getDeteccionId(),
+                        deteccion.getProyecto(),
+                        deteccion.getFotoId(),
+                        deteccion.getObjeto(),
+                        deteccion.getCantidad(),
+                        deteccion.getEsquina1(),
+                        deteccion.getEsquina2(),
+                        deteccion.getEsquina3(),
+                        deteccion.getEsquina4(),
+                        deteccion.getAccuracy()))
+                .collect(Collectors.toList());
+    }
     @GetMapping("/find/all")
     public List<DeteccionApiDto> getAllDetecciones() {
         List<DeteccionServiceDto> detecciones = deteccionService.findAll();
@@ -26,14 +42,12 @@ public class DeteccionController {
                 .collect(Collectors.toList());
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/find/{id}")
     public DeteccionApiDto getDeteccionById(@PathVariable Long id) {
         DeteccionServiceDto deteccion = deteccionService.obtenerDeteccionPorId(id);
         return convertirADeteccionApiDto(deteccion);
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/create")
     public DeteccionApiDto createDeteccion(@RequestBody DeteccionApiDto deteccionApiDto) {
         DeteccionServiceDto deteccionDto = convertirADeteccionServiceDto(deteccionApiDto);
@@ -41,7 +55,6 @@ public class DeteccionController {
         return convertirADeteccionApiDto(nuevaDeteccion);
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
     @PutMapping("/update/{id}")
     public DeteccionApiDto updateDeteccion(@PathVariable Long id, @RequestBody DeteccionApiDto deteccionApiDto) {
         DeteccionServiceDto deteccionDto = convertirADeteccionServiceDto(deteccionApiDto);
@@ -49,7 +62,6 @@ public class DeteccionController {
         return convertirADeteccionApiDto(deteccionActualizada);
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
     @DeleteMapping("/delete/{id}")
     public void deleteDeteccion(@PathVariable Long id) {
         deteccionService.eliminarDeteccion(id);

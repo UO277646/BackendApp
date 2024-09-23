@@ -13,9 +13,6 @@ import java.sql.Date;
 public class RestriccionApiDto {
     private Long idRestriccion; // CamelCase
 
-
-    private Proyecto proyecto;
-
     private String objeto;
 
     private Date fechaDesde;

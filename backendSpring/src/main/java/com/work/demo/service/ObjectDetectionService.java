@@ -1,6 +1,7 @@
 package com.work.demo.service;
 
 import ai.onnxruntime.*;
+import com.work.demo.service.dto.AnalisisReturnDto;
 import com.work.demo.service.utils.ImageUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,6 +12,7 @@ import com.work.demo.rest.dto.ObjectDetectionResult;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -19,6 +21,45 @@ import java.util.List;
 @Service
 public class ObjectDetectionService {
 
+    public AnalisisReturnDto performAllDetectionsAndReturnImage(MultipartFile imageFile) {
+        AnalisisReturnDto r=new AnalisisReturnDto();
+        BufferedImage imageWithDetections = null;
+        List<ObjectDetectionContainer> combinedResults = new ArrayList<>();
+
+        // Realizar la detección de conos
+        List<ObjectDetectionContainer> coneDetections = performConeDetection(imageFile);
+        combinedResults.addAll(coneDetections);
+
+        // Realizar la detección de vehículos
+        List<ObjectDetectionContainer> vehicleDetections = performVehicleDetection(imageFile);
+        combinedResults.addAll(vehicleDetections);
+
+        // Realizar la detección de grúas
+        List<ObjectDetectionContainer> gruasDetections = performGruasDetection(imageFile);
+        combinedResults.addAll(gruasDetections);
+
+        // Realizar la detección de palets
+        List<ObjectDetectionContainer> palletDetections = performPalletDetection(imageFile);
+        combinedResults.addAll(palletDetections);
+        r.setDetecciones(combinedResults);
+        try {
+            // Realizar todas las detecciones (Conos, Vehículos, Gruas, etc.)
+            performConeDetection(imageFile);
+            performVehicleDetection(imageFile);
+            performGruasDetection(imageFile);
+            performPalletDetection(imageFile);
+
+            // Convertir la imagen con detecciones a un byte array para enviar al frontend
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(imageWithDetections, "jpg", baos);
+            r.setImage(baos.toByteArray());
+            return r;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     public List<ObjectDetectionContainer> performConeDetection (MultipartFile imageFile) {
         List<ObjectDetectionResult> results = new ArrayList<>();

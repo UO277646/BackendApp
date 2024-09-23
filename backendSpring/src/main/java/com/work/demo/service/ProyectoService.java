@@ -1,8 +1,12 @@
 package com.work.demo.service;
 
+import com.work.demo.repository.DeteccionRepository;
 import com.work.demo.repository.Proyecto;
 import com.work.demo.repository.ProyectoRepository;
+import com.work.demo.repository.RestriccionRepository;
+import com.work.demo.service.dto.FotoServiceDto;
 import com.work.demo.service.dto.ProyectoServiceDto;
+import com.work.demo.service.dto.RestriccionServiceDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +21,10 @@ public class ProyectoService {
 
     @Autowired
     private ProyectoRepository proyectoRepository;
+    @Autowired
+    private DeteccionRepository deteccionRepository;
+    @Autowired
+    private RestriccionRepository restriccionRepository;
 
     // Método para convertir de Proyecto a ProyectoServiceDto
     private ProyectoServiceDto convertirAProyectoDto(Proyecto proyecto) {
@@ -101,6 +109,14 @@ public class ProyectoService {
         } catch (Exception e) {
             throw new RuntimeException("Error al eliminar el proyecto con ID: " + id_proyecto, e);
         }
+    }
+
+    public List<RestriccionServiceDto> findRestrict (Long id) {
+        return restriccionRepository.findRestrictionsByProject(id);
+    }
+
+    public List<FotoServiceDto> findDetect (Long id) {
+        return deteccionRepository.findDetectionsByProjectGroupedByDate(id);
     }
 }
 
