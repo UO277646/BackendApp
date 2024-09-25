@@ -58,7 +58,6 @@ public class RestriccionController {
     private RestriccionApiDto convertirARestriccionApiDto(RestriccionServiceDto restriccionDto) {
         return RestriccionApiDto.builder()
                 .idRestriccion(restriccionDto.getIdRestriccion())
-                .proyecto(restriccionDto.getProyecto())
                 .objeto(restriccionDto.getObjeto())
                 .fechaDesde(restriccionDto.getFechaDesde())
                 .fechaHasta(restriccionDto.getFechaHasta())
@@ -69,7 +68,6 @@ public class RestriccionController {
     private RestriccionServiceDto convertirARestriccionServiceDto(RestriccionApiDto restriccionApiDto) {
         return RestriccionServiceDto.builder()
                 .idRestriccion(restriccionApiDto.getIdRestriccion())
-                .proyecto(restriccionApiDto.getProyecto())
                 .objeto(restriccionApiDto.getObjeto())
                 .fechaDesde(restriccionApiDto.getFechaDesde())
                 .fechaHasta(restriccionApiDto.getFechaHasta())
