@@ -22,15 +22,15 @@ public class DeteccionController {
         // Convertimos de DeteccionServiceDto a DeteccionApiDto
         return detecciones.stream()
                 .map(deteccion -> new DeteccionApiDto(deteccion.getDeteccionId(),
-                        deteccion.getProyecto(),
+                        deteccion.getProyectoId(),
                         deteccion.getFotoId(),
                         deteccion.getObjeto(),
-                        deteccion.getCantidad(),
-                        deteccion.getEsquina1(),
-                        deteccion.getEsquina2(),
-                        deteccion.getEsquina3(),
-                        deteccion.getEsquina4(),
-                        deteccion.getAccuracy()))
+                        deteccion.getX(),
+                        deteccion.getY(),
+                        deteccion.getWeight(),
+                        deteccion.getHeight(),
+                        deteccion.getConfidence()
+                        ))
                 .collect(Collectors.toList());
     }
     @GetMapping("/find/all")
@@ -71,30 +71,28 @@ public class DeteccionController {
     private DeteccionApiDto convertirADeteccionApiDto(DeteccionServiceDto deteccionDto) {
         return DeteccionApiDto.builder()
                 .deteccionId(deteccionDto.getDeteccionId())
-                .proyecto(deteccionDto.getProyecto())
+                .proyectoId(deteccionDto.getProyectoId())
                 .fotoId(deteccionDto.getFotoId())
                 .objeto(deteccionDto.getObjeto())
-                .cantidad(deteccionDto.getCantidad())
-                .esquina1(deteccionDto.getEsquina1())
-                .esquina2(deteccionDto.getEsquina2())
-                .esquina3(deteccionDto.getEsquina3())
-                .esquina4(deteccionDto.getEsquina4())
-                .accuracy(deteccionDto.getAccuracy())
+                .x(deteccionDto.getX())
+                .y(deteccionDto.getY())
+                .weight(deteccionDto.getWeight())
+                .height(deteccionDto.getHeight())
+                .confidence(deteccionDto.getConfidence())
                 .build();
     }
 
     private DeteccionServiceDto convertirADeteccionServiceDto(DeteccionApiDto deteccionApiDto) {
         return DeteccionServiceDto.builder()
                 .deteccionId(deteccionApiDto.getDeteccionId())
-                .proyecto(deteccionApiDto.getProyecto())
+                .proyectoId(deteccionApiDto.getProyectoId())
                 .fotoId(deteccionApiDto.getFotoId())
                 .objeto(deteccionApiDto.getObjeto())
-                .cantidad(deteccionApiDto.getCantidad())
-                .esquina1(deteccionApiDto.getEsquina1())
-                .esquina2(deteccionApiDto.getEsquina2())
-                .esquina3(deteccionApiDto.getEsquina3())
-                .esquina4(deteccionApiDto.getEsquina4())
-                .accuracy(deteccionApiDto.getAccuracy())
+                .x(deteccionApiDto.getX())
+                .y(deteccionApiDto.getY())
+                .weight(deteccionApiDto.getWeight())
+                .height(deteccionApiDto.getHeight())
+                .confidence(deteccionApiDto.getConfidence())
                 .build();
     }
 }

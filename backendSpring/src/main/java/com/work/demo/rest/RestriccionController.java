@@ -16,7 +16,6 @@ public class RestriccionController {
     @Autowired
     private RestriccionService restriccionService;
 
-    @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/find/all")
     public List<RestriccionApiDto> getAllRestricciones() {
         List<RestriccionServiceDto> restricciones = restriccionService.findAll();
@@ -25,14 +24,12 @@ public class RestriccionController {
                 .collect(Collectors.toList());
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/find/{id}")
     public RestriccionApiDto getRestriccionById(@PathVariable Long id) {
         RestriccionServiceDto restriccion = restriccionService.obtenerRestriccionPorId(id);
         return convertirARestriccionApiDto(restriccion);
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/create")
     public RestriccionApiDto createRestriccion(@RequestBody RestriccionApiDto restriccionApiDto) {
         RestriccionServiceDto restriccionDto = convertirARestriccionServiceDto(restriccionApiDto);
@@ -40,7 +37,6 @@ public class RestriccionController {
         return convertirARestriccionApiDto(nuevaRestriccion);
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
     @PutMapping("/update/{id}")
     public RestriccionApiDto updateRestriccion(@PathVariable Long id, @RequestBody RestriccionApiDto restriccionApiDto) {
         RestriccionServiceDto restriccionDto = convertirARestriccionServiceDto(restriccionApiDto);
@@ -48,7 +44,6 @@ public class RestriccionController {
         return convertirARestriccionApiDto(restriccionActualizada);
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
     @DeleteMapping("/delete/{id}")
     public void deleteRestriccion(@PathVariable Long id) {
         restriccionService.eliminarRestriccion(id);
@@ -72,6 +67,7 @@ public class RestriccionController {
                 .fechaDesde(restriccionApiDto.getFechaDesde())
                 .fechaHasta(restriccionApiDto.getFechaHasta())
                 .cantidad(restriccionApiDto.getCantidad())
+                .proyectoId(restriccionApiDto.getIdProyecto())
                 .build();
     }
 }

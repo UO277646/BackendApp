@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import java.sql.Date;
 
 @Entity
-@Table(name="Proyecto")
+@Table(name="Proyectos")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

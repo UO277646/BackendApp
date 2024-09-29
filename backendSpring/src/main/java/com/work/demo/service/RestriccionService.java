@@ -1,11 +1,14 @@
 package com.work.demo.service;
 
+import com.work.demo.repository.Proyecto;
 import com.work.demo.repository.Restriccion;
 import com.work.demo.repository.RestriccionRepository;
 import com.work.demo.service.dto.RestriccionServiceDto;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.beans.Transient;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -15,12 +18,13 @@ public class RestriccionService {
 
     @Autowired
     private RestriccionRepository restriccionRepository;
-
+    @Autowired
+    private ProyectoService proyectoService;
     // Método para convertir de Restriccion a RestriccionServiceDto
     private RestriccionServiceDto convertirARestriccionDto(Restriccion restriccion) {
         return RestriccionServiceDto.builder()
                 .idRestriccion(restriccion.getIdRestriccion())
-                .proyecto(restriccion.getProyecto())
+                //.proyecto(restriccion.getProyecto())
                 .objeto(restriccion.getObjeto())
                 .fechaDesde(restriccion.getFechaDesde())
                 .fechaHasta(restriccion.getFechaHasta())
@@ -50,12 +54,13 @@ public class RestriccionService {
             throw new RuntimeException("Error al obtener la restricción con ID: " + idRestriccion, e);
         }
     }
-
+    @Transactional
     // Método para crear una nueva restricción
     public RestriccionServiceDto crearRestriccion(RestriccionServiceDto restriccionDto) {
         try {
             Restriccion nuevaRestriccion = new Restriccion();
-            nuevaRestriccion.setProyecto(restriccionDto.getProyecto());
+            Proyecto p=proyectoService.obtenerProyectoPorIdEntidad(restriccionDto.getProyectoId());
+            nuevaRestriccion.setProyecto(p);
             nuevaRestriccion.setObjeto(restriccionDto.getObjeto());
             nuevaRestriccion.setFechaDesde(restriccionDto.getFechaDesde());
             nuevaRestriccion.setFechaHasta(restriccionDto.getFechaHasta());
@@ -73,7 +78,7 @@ public class RestriccionService {
             Restriccion restriccionExistente = restriccionRepository.findById(idRestriccion)
                     .orElseThrow(() -> new RuntimeException("Restricción no encontrada con ID: " + idRestriccion));
 
-            restriccionExistente.setProyecto(restriccionActualizadaDto.getProyecto());
+            //restriccionExistente.setProyecto(restriccionActualizadaDto.getProyecto());
             restriccionExistente.setObjeto(restriccionActualizadaDto.getObjeto());
             restriccionExistente.setFechaDesde(restriccionActualizadaDto.getFechaDesde());
             restriccionExistente.setFechaHasta(restriccionActualizadaDto.getFechaHasta());

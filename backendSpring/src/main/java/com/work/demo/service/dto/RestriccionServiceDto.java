@@ -15,7 +15,7 @@ public class RestriccionServiceDto {
     private Long idRestriccion; // CamelCase
 
 
-    private Proyecto proyecto;
+    private Long proyectoId;
 
     private String objeto;
 

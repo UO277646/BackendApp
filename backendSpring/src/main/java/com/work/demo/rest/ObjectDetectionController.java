@@ -24,14 +24,13 @@ public class ObjectDetectionController {
     private ObjectDetectionService obj;
     @Autowired
     private DeteccionService deteccionService;
-    @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/detect")
-    public List<ObjectDetectionContainer> detectObjects(@RequestParam("image") MultipartFile image) {
+    public List<ObjectDetectionResult> detectObjects(@RequestParam("image") MultipartFile image,@RequestParam("proyectId")Long proyectId) {
         List<ObjectDetectionResult> objectList = new ArrayList<>();
         if(deteccionService.checkToday()){
             throw new RuntimeException("Hoy ya se ha subido foto");
         }
-        List<ObjectDetectionContainer> results = performObjectDetection(image);
+        List<ObjectDetectionResult> results = performObjectDetection(image,proyectId);
         return results;
     }
     @GetMapping("/list")
@@ -44,29 +43,29 @@ public class ObjectDetectionController {
         return l;
     }
     @RequestMapping("/detections/image")
-    public AnalisisReturnDto getDetectionImage(@RequestParam("image") MultipartFile imageFile) {
-        AnalisisReturnDto response=obj.performAllDetectionsAndReturnImage(imageFile);
+    public AnalisisReturnDto getDetectionImage(@RequestParam("image") MultipartFile imageFile,@RequestParam("proyectId")Long proyectId) {
+        AnalisisReturnDto response=obj.performAllDetectionsAndReturnImage(imageFile,proyectId);
         return response;
     }
 
-    private List<ObjectDetectionContainer> performObjectDetection(MultipartFile image) {
+    private List<ObjectDetectionResult> performObjectDetection(MultipartFile image,Long proyectId) {
         // Lista para almacenar los resultados combinados de todas las detecciones
-        List<ObjectDetectionContainer> combinedResults = new ArrayList<>();
+        List<ObjectDetectionResult> combinedResults = new ArrayList<>();
 
         // Realizar la detección de conos
-        List<ObjectDetectionContainer> coneDetections = obj.performConeDetection(image);
+        List<ObjectDetectionResult> coneDetections = obj.performConeDetection(image,proyectId);
         combinedResults.addAll(coneDetections);
 
         // Realizar la detección de vehículos
-        List<ObjectDetectionContainer> vehicleDetections = obj.performVehicleDetection(image);
+        List<ObjectDetectionResult> vehicleDetections = obj.performVehicleDetection(image,proyectId);
         combinedResults.addAll(vehicleDetections);
 
         // Realizar la detección de grúas
-        List<ObjectDetectionContainer> gruasDetections = obj.performGruasDetection(image);
+        List<ObjectDetectionResult> gruasDetections = obj.performGruasDetection(image,proyectId);
         combinedResults.addAll(gruasDetections);
 
         // Realizar la detección de palets
-        List<ObjectDetectionContainer> palletDetections = obj.performPalletDetection(image);
+        List<ObjectDetectionResult> palletDetections = obj.performPalletDetection(image,proyectId);
         combinedResults.addAll(palletDetections);
 
         // Devolver la lista combinada de todas las detecciones

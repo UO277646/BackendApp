@@ -17,23 +17,21 @@ public class DeteccionApiDto {
     private Long deteccionId; // CamelCase
 
 
-    private Proyecto proyecto;
+    private Long proyectoId;
 
 
     private Date fotoId;
 
     private String objeto;
 
-    private int cantidad;
+    private double x;
 
-    private double esquina1;
+    private double y;
 
-    private double esquina2;
+    private double weight;
 
-    private double esquina3;
+    private double height;
 
-    private double esquina4;
-
-    private double accuracy;
+    private double confidence;
 }
 

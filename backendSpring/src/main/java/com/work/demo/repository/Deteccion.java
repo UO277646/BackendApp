@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.sql.Date;
-
+@Table(name="Detecciones")
 @Entity
 @Builder
 @AllArgsConstructor
@@ -23,22 +23,20 @@ public class Deteccion {
 
     @Column(name = "foto_id") // Mapeo explícito de la columna foto_id
     private Date fotoId;
-
+    @Column(name = "objeto") // Mapeo explícito de la columna foto_id
     private String objeto;
 
-    private int cantidad;
+    @Column(name = "x") // Mapeo explícito de la columna esquina1
+    private double x;
 
-    @Column(name = "esquina1") // Mapeo explícito de la columna esquina1
-    private double esquina1;
+    @Column(name = "y") // Mapeo explícito de la columna esquina2
+    private double y;
 
-    @Column(name = "esquina2") // Mapeo explícito de la columna esquina2
-    private double esquina2;
+    @Column(name = "weight") // Mapeo explícito de la columna esquina3
+    private double weight;
 
-    @Column(name = "esquina3") // Mapeo explícito de la columna esquina3
-    private double esquina3;
-
-    @Column(name = "esquina4") // Mapeo explícito de la columna esquina4
-    private double esquina4;
-
-    private double accuracy;
+    @Column(name = "height") // Mapeo explícito de la columna esquina4
+    private double height;
+    @Column(name = "confidence") // Mapeo explícito de la columna esquina4
+    private double confidence;
 }

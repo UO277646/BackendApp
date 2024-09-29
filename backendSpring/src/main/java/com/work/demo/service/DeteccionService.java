@@ -2,6 +2,7 @@ package com.work.demo.service;
 
 import com.work.demo.repository.Deteccion;
 import com.work.demo.repository.DeteccionRepository;
+import com.work.demo.repository.Proyecto;
 import com.work.demo.service.dto.DeteccionServiceDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class DeteccionService {
-
+    @Autowired
+    private ProyectoService proyectoService;
     @Autowired
     private DeteccionRepository deteccionRepository;
 
@@ -23,15 +25,14 @@ public class DeteccionService {
     private DeteccionServiceDto convertirADeteccionDto(Deteccion deteccion) {
         return DeteccionServiceDto.builder()
                 .deteccionId(deteccion.getDeteccionId())
-                .proyecto(deteccion.getProyecto())
+                .proyectoId(deteccion.getProyecto().getIdProyecto())
                 .fotoId(deteccion.getFotoId())
                 .objeto(deteccion.getObjeto())
-                .cantidad(deteccion.getCantidad())
-                .esquina1(deteccion.getEsquina1())
-                .esquina2(deteccion.getEsquina2())
-                .esquina3(deteccion.getEsquina3())
-                .esquina4(deteccion.getEsquina4())
-                .accuracy(deteccion.getAccuracy())
+                .x(deteccion.getX())
+                .y(deteccion.getY())
+                .weight(deteccion.getWeight())
+                .height(deteccion.getHeight())
+                .confidence(deteccion.getConfidence())
                 .build();
     }
 
@@ -73,16 +74,16 @@ public class DeteccionService {
     // Método para crear una nueva detección y devolver un DTO
     public DeteccionServiceDto crearDeteccion(DeteccionServiceDto deteccionDto) {
         try {
+            Proyecto p=proyectoService.obtenerProyectoPorIdEntidad(deteccionDto.getProyectoId());
             Deteccion nuevaDeteccion = Deteccion.builder()
-                    .proyecto(deteccionDto.getProyecto())
-                    .fotoId(deteccionDto.getFotoId())
+                    .proyecto(p)
+                    .fotoId(new Date(System.currentTimeMillis()))
                     .objeto(deteccionDto.getObjeto())
-                    .cantidad(deteccionDto.getCantidad())
-                    .esquina1(deteccionDto.getEsquina1())
-                    .esquina2(deteccionDto.getEsquina2())
-                    .esquina3(deteccionDto.getEsquina3())
-                    .esquina4(deteccionDto.getEsquina4())
-                    .accuracy(deteccionDto.getAccuracy())
+                    .x(deteccionDto.getX())
+                    .y(deteccionDto.getY())
+                    .weight(deteccionDto.getWeight())
+                    .height(deteccionDto.getHeight())
+                    .confidence(deteccionDto.getConfidence())
                     .build();
 
             Deteccion deteccionGuardada = deteccionRepository.save(nuevaDeteccion);
@@ -95,18 +96,18 @@ public class DeteccionService {
     // Método para actualizar una detección existente y devolver un DTO
     public DeteccionServiceDto actualizarDeteccion(Long deteccionId, DeteccionServiceDto deteccionActualizadaDto) {
         try {
+            Proyecto p=proyectoService.obtenerProyectoPorIdEntidad(deteccionActualizadaDto.getProyectoId());
             Deteccion deteccionExistente = deteccionRepository.findById(deteccionId)
                     .orElseThrow(() -> new RuntimeException("Detección no encontrada con ID: " + deteccionId));
 
-            deteccionExistente.setProyecto(deteccionActualizadaDto.getProyecto());
+            deteccionExistente.setProyecto(p);
             deteccionExistente.setFotoId(deteccionActualizadaDto.getFotoId());
             deteccionExistente.setObjeto(deteccionActualizadaDto.getObjeto());
-            deteccionExistente.setCantidad(deteccionActualizadaDto.getCantidad());
-            deteccionExistente.setEsquina1(deteccionActualizadaDto.getEsquina1());
-            deteccionExistente.setEsquina2(deteccionActualizadaDto.getEsquina2());
-            deteccionExistente.setEsquina3(deteccionActualizadaDto.getEsquina3());
-            deteccionExistente.setEsquina4(deteccionActualizadaDto.getEsquina4());
-            deteccionExistente.setAccuracy(deteccionActualizadaDto.getAccuracy());
+            deteccionExistente.setX(deteccionActualizadaDto.getX());
+            deteccionExistente.setY(deteccionActualizadaDto.getY());
+            deteccionExistente.setHeight(deteccionActualizadaDto.getHeight());
+            deteccionExistente.setWeight(deteccionActualizadaDto.getWeight());
+            deteccionExistente.setConfidence(deteccionActualizadaDto.getConfidence());
 
             Deteccion deteccionActualizada = deteccionRepository.save(deteccionExistente);
             return convertirADeteccionDto(deteccionActualizada);

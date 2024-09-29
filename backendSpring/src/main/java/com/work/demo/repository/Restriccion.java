@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.sql.Date;
-
+@Table(name="Restricciones")
 @Entity
 @Builder
 @AllArgsConstructor

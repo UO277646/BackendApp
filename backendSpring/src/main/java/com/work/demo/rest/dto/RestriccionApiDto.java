@@ -20,4 +20,6 @@ public class RestriccionApiDto {
     private Date fechaHasta;
 
     private int cantidad;
+
+    private Long idProyecto;
 }

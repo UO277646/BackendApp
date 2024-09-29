@@ -69,6 +69,14 @@ public class ProyectoService {
             throw new RuntimeException("Error al obtener el proyecto con ID: " + id_proyecto, e);
         }
     }
+    public Proyecto obtenerProyectoPorIdEntidad(Long id_proyecto) {
+        try {
+
+            return  proyectoRepository.findById(id_proyecto).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener el proyecto con ID: " + id_proyecto, e);
+        }
+    }
 
     // Método para crear un nuevo proyecto y devolver un DTO
     public ProyectoServiceDto crearProyecto(ProyectoServiceDto proyectoDto) {
