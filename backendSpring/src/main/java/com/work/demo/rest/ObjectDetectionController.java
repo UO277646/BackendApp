@@ -27,12 +27,13 @@ public class ObjectDetectionController {
     @PostMapping("/detect")
     public List<ObjectDetectionResult> detectObjects(@RequestParam("image") MultipartFile image,@RequestParam("proyectId")Long proyectId) {
         List<ObjectDetectionResult> objectList = new ArrayList<>();
-        if(deteccionService.checkToday()){
-            throw new RuntimeException("Hoy ya se ha subido foto");
-        }
+        //if(deteccionService.checkToday()){
+            //throw new RuntimeException("Hoy ya se ha subido foto");
+        //}
         List<ObjectDetectionResult> results = performObjectDetection(image,proyectId);
         return results;
     }
+    //Upload file o algo asi
     @GetMapping("/list")
     public List<ObjectPruebaDto> detectObjects() {
         List<ObjectPruebaDto> l=new ArrayList<>();
@@ -53,21 +54,22 @@ public class ObjectDetectionController {
         List<ObjectDetectionResult> combinedResults = new ArrayList<>();
 
         // Realizar la detección de conos
-        List<ObjectDetectionResult> coneDetections = obj.performConeDetection(image,proyectId);
-        combinedResults.addAll(coneDetections);
 
+        System.out.println("Comienzo analisis Vehiculos");
         // Realizar la detección de vehículos
         List<ObjectDetectionResult> vehicleDetections = obj.performVehicleDetection(image,proyectId);
         combinedResults.addAll(vehicleDetections);
-
+        System.out.println("Comienzo analisis gruas");
         // Realizar la detección de grúas
         List<ObjectDetectionResult> gruasDetections = obj.performGruasDetection(image,proyectId);
         combinedResults.addAll(gruasDetections);
-
+        System.out.println("Comienzo analisis pallets");
         // Realizar la detección de palets
         List<ObjectDetectionResult> palletDetections = obj.performPalletDetection(image,proyectId);
         combinedResults.addAll(palletDetections);
-
+        System.out.println("Comienzo analisis conos");
+        List<ObjectDetectionResult> coneDetections = obj.performConeDetection(image,proyectId);
+        combinedResults.addAll(coneDetections);
         // Devolver la lista combinada de todas las detecciones
         return combinedResults;
     }

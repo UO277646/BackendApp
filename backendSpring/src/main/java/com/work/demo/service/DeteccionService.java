@@ -150,6 +150,15 @@ public class DeteccionService {
 
     public List<DeteccionServiceDto> findByFotoId (Date fotoId) {
         // Llama al repositorio para buscar las detecciones por fotoId
-        return deteccionRepository.findDetectionsByFotoId(fotoId);
+        return deteccionRepository.findByFotoId(fotoId);
+    }
+
+    public List<DeteccionServiceDto> findByProyectoAndDia (Long proyecto, Date dia) {
+        List<Deteccion> detecciones = deteccionRepository.findByProyectoIdAndFotoId(proyecto, dia);
+
+        // Convertimos la entidad Deteccion a DeteccionServiceDto
+        return detecciones.stream()
+                .map(this::convertirADeteccionDto)
+                .collect(Collectors.toList());
     }
 }

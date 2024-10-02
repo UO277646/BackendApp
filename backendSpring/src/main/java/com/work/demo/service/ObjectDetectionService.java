@@ -74,107 +74,110 @@ public class ObjectDetectionService {
         // Calcular la IoU (Intersección sobre Unión)
         return interArea / (boxAArea + boxBArea - interArea);
     }
+/**
+ public List<ObjectDetectionResult> performConeDetection (MultipartFile imageFile,Long proyectoId) {
 
+ List<ObjectDetectionResult> results = new ArrayList<>();
+ float iouThreshold = 0.5f;  // Umbral para considerar que dos cajas representan el mismo objeto
+
+ try {
+ // Cargar el modelo ONNX
+ OrtEnvironment env = OrtEnvironment.getEnvironment();
+ OrtSession session = env.createSession("C:\\Users\\user\\Desktop\\wsPagWeb\\trainsExitosos\\conesTrain\\weights\\best.onnx", new OrtSession.SessionOptions());
+
+ // Redimensionar la imagen
+ BufferedImage image = resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
+
+ // Convertir la imagen a tensor
+ float[][][][] inputData = ImageUtils.convertImageTo4DFloatArray(image);
+ OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputData);
+ Map<String, OnnxTensorLike> inputs = Collections.singletonMap("images", inputTensor);
+
+ // Realizar la inferencia
+ OrtSession.Result result = session.run(inputs);
+ OnnxTensor outputTensor = (OnnxTensor) result.get("output0").get();
+ float[][][] outputData = (float[][][]) outputTensor.getValue();
+
+ // Procesar todas las detecciones
+ for (int i = 0; i < outputData.length; i++) {
+ for (int j=0; j < outputData[i][0].length; j++) {
+ float confidence=outputData[i][4][0]; // Usualmente la confianza está en la 5ta posición
+ // Solo considerar detecciones con suficiente confianza
+ if (confidence > 0.5) {
+ float cx = outputData[i][0][j];
+ float cy = outputData[i][1][j];
+ float width = outputData[i][2][j];
+ float height = outputData[i][3][j];
+
+
+ // Convertir coordenadas centrales a esquinas
+ float x1=cx - width / 2;
+ float y1=cy - height / 2;
+ float x2=cx + width / 2;
+ float y2=cy + height / 2;
+
+ float[] newBox=new float[]{x1, y1, x2, y2};
+
+ // Verificar si la caja es similar a una detección existente
+ boolean esCajaDuplicada=false;
+ for (ObjectDetectionResult resultDet : results) {
+ // Convertir x, y, width, height de resultDet a esquinas
+ float existingX1=(float) (resultDet.getX() - resultDet.getWeight() / 2);
+ float existingY1=(float) (resultDet.getY() - resultDet.getHeight() / 2);
+ float existingX2=(float) (resultDet.getX() + resultDet.getWeight() / 2);
+ float existingY2=(float) (resultDet.getY() + resultDet.getHeight() / 2);
+ float[] existingBox=new float[]{existingX1, existingY1, existingX2, existingY2};
+
+ float iou=calcularIoU(newBox, existingBox);
+
+ if (iou > iouThreshold) {
+ esCajaDuplicada=true;
+ break;
+ }
+ }
+ System.out.println("IOU calculado para los conos");
+ // Si no es una caja duplicada, agregar la nueva detección
+ if (!esCajaDuplicada) {
+ System.out.println("No es caja duplicada");
+ ObjectDetectionResult detectionResult=new ObjectDetectionResult(cx, cy, width, height, confidence, "Cono");
+ results.add(detectionResult);
+
+ // Guardar la detección en la base de datos
+ deteccionService.crearDeteccion(new DeteccionServiceDto(null, proyectoId, null, "Cono", x1, y1, x2, y2, confidence));
+
+ // Dibujar la detección en la imagen
+ Graphics2D graphics=image.createGraphics();
+ graphics.setColor(Color.RED);
+ graphics.setStroke(new java.awt.BasicStroke(3));
+ graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+ graphics.dispose();
+ }
+ }
+ }
+ }
+ // Guardar la imagen modificada
+ String outputImagePath = "C:\\Users\\user\\Desktop\\detected_image.jpg";
+ File outputfile = new File(outputImagePath);
+ ImageIO.write(image, "jpg", outputfile);
+
+ // Liberar los recursos
+ inputTensor.close();
+ outputTensor.close();
+ session.close();
+ env.close();
+
+ } catch (OrtException | IOException e) {
+ e.printStackTrace();
+ }
+
+ return results;
+
+ }
+*/
+/** Funciona */
     public List<ObjectDetectionResult> performConeDetection (MultipartFile imageFile,Long proyectoId) {
-
         List<ObjectDetectionResult> results = new ArrayList<>();
         float iouThreshold = 0.5f;  // Umbral para considerar que dos cajas representan el mismo objeto
-
-        try {
-            // Cargar el modelo ONNX
-            OrtEnvironment env = OrtEnvironment.getEnvironment();
-            OrtSession session = env.createSession("C:\\Users\\user\\Desktop\\wsPagWeb\\trainsExitosos\\conesTrain\\weights\\best.onnx", new OrtSession.SessionOptions());
-
-            // Redimensionar la imagen
-            BufferedImage image = resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
-
-            // Convertir la imagen a tensor
-            float[][][][] inputData = ImageUtils.convertImageTo4DFloatArray(image);
-            OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputData);
-            Map<String, OnnxTensorLike> inputs = Collections.singletonMap("images", inputTensor);
-
-            // Realizar la inferencia
-            OrtSession.Result result = session.run(inputs);
-            OnnxTensor outputTensor = (OnnxTensor) result.get("output0").get();
-            float[][][] outputData = (float[][][]) outputTensor.getValue();
-
-            // Procesar todas las detecciones
-            for (int i = 0; i < outputData.length; i++) {
-                float confidence = outputData[i][4][0]; // Usualmente la confianza está en la 5ta posición
-
-                // Solo considerar detecciones con suficiente confianza
-                if (confidence > 0.5) {
-                    float cx = outputData[i][0][0];
-                    float cy = outputData[i][1][0];
-                    float width = outputData[i][2][0];
-                    float height = outputData[i][3][0];
-
-                    // Convertir coordenadas centrales a esquinas
-                    float x1 = cx - width / 2;
-                    float y1 = cy - height / 2;
-                    float x2 = cx + width / 2;
-                    float y2 = cy + height / 2;
-
-                    float[] newBox = new float[]{x1, y1, x2, y2};
-
-                    // Verificar si la caja es similar a una detección existente
-                    boolean esCajaDuplicada = false;
-                    for (ObjectDetectionResult resultDet : results) {
-                        // Convertir x, y, width, height de resultDet a esquinas
-                        float existingX1 = (float) (resultDet.getX() - resultDet.getWeight() / 2);
-                        float existingY1 = (float) (resultDet.getY() - resultDet.getHeight() / 2);
-                        float existingX2 = (float) (resultDet.getX() + resultDet.getWeight() / 2);
-                        float existingY2 = (float) (resultDet.getY() + resultDet.getHeight() / 2);
-                        float[] existingBox = new float[]{existingX1, existingY1, existingX2, existingY2};
-
-                        float iou = calcularIoU(newBox, existingBox);
-
-                        if (iou > iouThreshold) {
-                            esCajaDuplicada = true;
-                            break;
-                        }
-                    }
-
-                    // Si no es una caja duplicada, agregar la nueva detección
-                    if (!esCajaDuplicada) {
-                        ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, confidence, "Cono");
-                        results.add(detectionResult);
-
-                        // Guardar la detección en la base de datos
-                        deteccionService.crearDeteccion(new DeteccionServiceDto(null, proyectoId, null, "Cono", x1, y1, x2, y2, confidence));
-
-                        // Dibujar la detección en la imagen
-                        Graphics2D graphics = image.createGraphics();
-                        graphics.setColor(Color.RED);
-                        graphics.setStroke(new java.awt.BasicStroke(3));
-                        graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
-                        graphics.dispose();
-                    }
-                }
-            }
-
-            // Guardar la imagen modificada
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_image.jpg";
-            File outputfile = new File(outputImagePath);
-            ImageIO.write(image, "jpg", outputfile);
-
-            // Liberar los recursos
-            inputTensor.close();
-            outputTensor.close();
-            session.close();
-            env.close();
-
-        } catch (OrtException | IOException e) {
-            e.printStackTrace();
-        }
-
-        return results;
-
-    }
-
-/** Funciona
-    public List<ObjectDetectionContainer> performConeDetection (MultipartFile imageFile,Long proyectoId) {
-        List<ObjectDetectionResult> results = new ArrayList<>();
 
         try {
             // Cargar el modelo ONNX
@@ -198,7 +201,7 @@ public class ObjectDetectionService {
 
             // Procesar la salida del tensor
             float bestConfidence = 0.0f;
-            float[] bestBox = null;
+
 
             for (int i = 0; i < outputData.length; i++) {
                 for (int j = 0; j < outputData[i][0].length; j++) {
@@ -210,9 +213,7 @@ public class ObjectDetectionService {
                     float confidence = outputData[i][4][j];
 
                     // Filtrar por confianza y buscar la detección con mayor confianza
-                    if (confidence > bestConfidence) {
-                        bestConfidence = confidence;
-
+                    if (confidence > 0.4) {
                         // Convertir de coordenadas centrales a esquinas
                         float x1 = cx - width / 2;
                         float y1 = cy - height / 2;
@@ -220,36 +221,45 @@ public class ObjectDetectionService {
                         float y2 = cy + height / 2;
 
                         // Actualizar la mejor caja delimitadora
-                        bestBox = new float[]{x1, y1, x2, y2};
+                        float[]  newBox = new float[]{x1, y1, x2, y2};
+                        boolean esCajaDuplicada = false;
+                        for (ObjectDetectionResult resultDet : results) {
+                            float existingX1 = (float) (resultDet.getX() - resultDet.getWeight() / 2);
+                            float existingY1 = (float) (resultDet.getY() - resultDet.getHeight() / 2);
+                            float existingX2 = (float) (resultDet.getX() + resultDet.getWeight() / 2);
+                            float existingY2 = (float) (resultDet.getY() + resultDet.getHeight() / 2);
+                            float[] existingBox = new float[]{existingX1, existingY1, existingX2, existingY2};
+
+                            float iou = calcularIoU(newBox, existingBox);
+                            if (iou > iouThreshold) {
+                                esCajaDuplicada = true;
+                                break;
+                            }
+                        }
+                        if(!esCajaDuplicada){
+                            ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, confidence, "Cono");
+                            results.add(detectionResult);
+                            deteccionService.crearDeteccion(new DeteccionServiceDto(null, proyectoId, null, "Cono", x1, y1, x2, y2, confidence));
+
+                            // Dibujar la detección en la imagen
+                            Graphics2D graphics = image.createGraphics();
+                            graphics.setColor(Color.RED);
+                            graphics.setStroke(new java.awt.BasicStroke(3));
+                            graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+                            graphics.dispose();
+                        }
                     }
                 }
             }
 
             // Almacenar la mejor detección si tiene suficiente confianza
-            if (bestConfidence > 0.5) {
-                System.out.println("Mejor detección con confianza: " + bestConfidence);
-                System.out.println("Caja delimitadora: " + Arrays.toString(bestBox));
 
-                ObjectDetectionResult detectionResult = new ObjectDetectionResult(
-                        bestBox[0], bestBox[1], bestBox[2], bestBox[3], bestConfidence, "Cono"
-                );
-                results.add(detectionResult);
-                deteccionService.crearDeteccion(new DeteccionServiceDto(null,proyectoId,null,"Cono",bestBox[0], bestBox[1], bestBox[2], bestBox[3], bestConfidence));
-                // Dibujar el recuadro en la imagen
-                Graphics2D graphics = image.createGraphics();
-                graphics.setColor(Color.RED);
-                graphics.setStroke(new java.awt.BasicStroke(3));
-                graphics.drawRect((int) bestBox[0], (int) bestBox[1], (int) (bestBox[2] - bestBox[0]), (int) (bestBox[3] - bestBox[1]));
-                graphics.dispose();
 
                 // Guardar la imagen con el recuadro en el disco
-                String outputImagePath = "C:\\Users\\user\\Desktop\\detected_image.jpg";
-                File outputfile = new File(outputImagePath);
-                ImageIO.write(image, "jpg", outputfile);
-
-                System.out.println("Imagen guardada en: " + outputImagePath);
-            }
-
+            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_image.jpg";
+            File outputfile = new File(outputImagePath);
+            ImageIO.write(image, "jpg", outputfile);
+            System.out.println("Imagen guardada en: " + outputImagePath);
             // Liberar los recursos
             inputTensor.close();
             outputTensor.close();
@@ -261,16 +271,14 @@ public class ObjectDetectionService {
         }
 
         // Envolver los resultados en un contenedor
-        ObjectDetectionContainer cont = new ObjectDetectionContainer();
-        cont.setObjects(results);
-        List<ObjectDetectionContainer> l = new ArrayList<>();
-        l.add(cont);
-        return l;
+
+        return results;
     }
 
-*/
-    public List<ObjectDetectionResult> performVehicleDetection (MultipartFile imageFile,Long proyectoId) {
+
+    public List<ObjectDetectionResult> performVehicleDetection(MultipartFile imageFile, Long proyectoId) {
         List<ObjectDetectionResult> results = new ArrayList<>();
+        float iouThreshold = 0.5f;  // Umbral para considerar que dos cajas representan el mismo objeto
 
         try {
             // Cargar el modelo ONNX
@@ -293,9 +301,6 @@ public class ObjectDetectionService {
             System.out.println("Forma del tensor de salida: " + Arrays.toString(outputShape));
 
             // Procesar la salida del tensor
-            float bestConfidence = 0.0f;
-            float[] bestBox = null;
-
             for (int i = 0; i < outputData.length; i++) {
                 for (int j = 0; j < outputData[i][0].length; j++) {
                     // Descomponemos las 5 características
@@ -305,46 +310,52 @@ public class ObjectDetectionService {
                     float height = outputData[i][3][j];
                     float confidence = outputData[i][4][j];
 
-                    // Filtrar por confianza y buscar la detección con mayor confianza
-                    if (confidence > bestConfidence) {
-                        bestConfidence = confidence;
-
+                    // Filtrar por confianza
+                    if (confidence > 0.4) {
                         // Convertir de coordenadas centrales a esquinas
                         float x1 = cx - width / 2;
                         float y1 = cy - height / 2;
                         float x2 = cx + width / 2;
                         float y2 = cy + height / 2;
 
-                        // Actualizar la mejor caja delimitadora
-                        bestBox = new float[]{x1, y1, x2, y2};
+                        // Control de duplicados con IoU
+                        float[] newBox = new float[]{x1, y1, x2, y2};
+                        boolean esCajaDuplicada = false;
+                        for (ObjectDetectionResult resultDet : results) {
+                            float existingX1 = (float) (resultDet.getX() - resultDet.getWeight() / 2);
+                            float existingY1 = (float) (resultDet.getY() - resultDet.getHeight() / 2);
+                            float existingX2 = (float) (resultDet.getX() + resultDet.getWeight() / 2);
+                            float existingY2 = (float) (resultDet.getY() + resultDet.getHeight() / 2);
+                            float[] existingBox = new float[]{existingX1, existingY1, existingX2, existingY2};
+
+                            float iou = calcularIoU(newBox, existingBox);
+                            if (iou > iouThreshold) {
+                                esCajaDuplicada = true;
+                                break;
+                            }
+                        }
+
+                        if (!esCajaDuplicada) {
+                            ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, confidence, "Vehicle");
+                            results.add(detectionResult);
+                            deteccionService.crearDeteccion(new DeteccionServiceDto(null, proyectoId, null, "Vehicle", x1, y1, x2, y2, confidence));
+
+                            // Dibujar el recuadro en la imagen
+                            Graphics2D graphics = image.createGraphics();
+                            graphics.setColor(Color.BLUE);  // Cambia a color azul para vehículos
+                            graphics.setStroke(new java.awt.BasicStroke(3));
+                            graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+                            graphics.dispose();
+                        }
                     }
                 }
             }
 
-            // Almacenar la mejor detección si tiene suficiente confianza
-            if (bestConfidence > 0.5) {
-                System.out.println("Mejor detección con confianza: " + bestConfidence);
-                System.out.println("Caja delimitadora: " + Arrays.toString(bestBox));
-
-                ObjectDetectionResult detectionResult = new ObjectDetectionResult(
-                        bestBox[0], bestBox[1], bestBox[2], bestBox[3], bestConfidence, "Vehicle"
-                );
-                results.add(detectionResult);
-
-                // Dibujar el recuadro en la imagen
-                Graphics2D graphics = image.createGraphics();
-                graphics.setColor(Color.RED);
-                graphics.setStroke(new java.awt.BasicStroke(3));
-                graphics.drawRect((int) bestBox[0], (int) bestBox[1], (int) (bestBox[2] - bestBox[0]), (int) (bestBox[3] - bestBox[1]));
-                graphics.dispose();
-
-                // Guardar la imagen con el recuadro en el disco
-                String outputImagePath = "C:\\Users\\user\\Desktop\\detected_image.jpg";
-                File outputfile = new File(outputImagePath);
-                ImageIO.write(image, "jpg", outputfile);
-
-                System.out.println("Imagen guardada en: " + outputImagePath);
-            }
+            // Guardar la imagen con las detecciones en el disco
+            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_image.jpg";
+            File outputfile = new File(outputImagePath);
+            ImageIO.write(image, "jpg", outputfile);
+            System.out.println("Imagen guardada en: " + outputImagePath);
 
             // Liberar los recursos
             inputTensor.close();
@@ -357,12 +368,13 @@ public class ObjectDetectionService {
         }
 
         // Envolver los resultados en un contenedor
-
         return results;
     }
 
-    public List<ObjectDetectionResult> performGruasDetection (MultipartFile imageFile,Long proyectoId) {
+
+    public List<ObjectDetectionResult> performGruasDetection(MultipartFile imageFile, Long proyectoId) {
         List<ObjectDetectionResult> results = new ArrayList<>();
+        float iouThreshold = 0.5f;  // Umbral para considerar que dos cajas representan el mismo objeto
 
         try {
             // Cargar el modelo ONNX
@@ -385,9 +397,6 @@ public class ObjectDetectionService {
             System.out.println("Forma del tensor de salida: " + Arrays.toString(outputShape));
 
             // Procesar la salida del tensor
-            float bestConfidence = 0.0f;
-            float[] bestBox = null;
-
             for (int i = 0; i < outputData.length; i++) {
                 for (int j = 0; j < outputData[i][0].length; j++) {
                     // Descomponemos las 5 características
@@ -397,10 +406,8 @@ public class ObjectDetectionService {
                     float height = outputData[i][3][j];
                     float confidence = outputData[i][4][j];
 
-                    // Filtrar por confianza y buscar la detección con mayor confianza
-                    if (confidence > bestConfidence) {
-                        bestConfidence = confidence;
-
+                    // Filtrar por confianza
+                    if (confidence > 0.4) {
                         // Convertir de coordenadas centrales a esquinas
                         float x1 = cx - width / 2;
                         float y1 = cy - height / 2;
@@ -408,35 +415,42 @@ public class ObjectDetectionService {
                         float y2 = cy + height / 2;
 
                         // Actualizar la mejor caja delimitadora
-                        bestBox = new float[]{x1, y1, x2, y2};
+                        float[] newBox = new float[]{x1, y1, x2, y2};
+                        boolean esCajaDuplicada = false;
+                        for (ObjectDetectionResult resultDet : results) {
+                            float existingX1 = (float) (resultDet.getX() - resultDet.getWeight() / 2);
+                            float existingY1 = (float) (resultDet.getY() - resultDet.getHeight() / 2);
+                            float existingX2 = (float) (resultDet.getX() + resultDet.getWeight() / 2);
+                            float existingY2 = (float) (resultDet.getY() + resultDet.getHeight() / 2);
+                            float[] existingBox = new float[]{existingX1, existingY1, existingX2, existingY2};
+
+                            float iou = calcularIoU(newBox, existingBox);
+                            if (iou > iouThreshold) {
+                                esCajaDuplicada = true;
+                                break;
+                            }
+                        }
+                        if (!esCajaDuplicada) {
+                            ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, confidence, "Grua");
+                            results.add(detectionResult);
+                            deteccionService.crearDeteccion(new DeteccionServiceDto(null, proyectoId, null, "Grua", x1, y1, x2, y2, confidence));
+
+                            // Dibujar la detección en la imagen
+                            Graphics2D graphics = image.createGraphics();
+                            graphics.setColor(Color.CYAN);
+                            graphics.setStroke(new java.awt.BasicStroke(3));
+                            graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+                            graphics.dispose();
+                        }
                     }
                 }
             }
 
-            // Almacenar la mejor detección si tiene suficiente confianza
-            if (bestConfidence > 0.5) {
-                System.out.println("Mejor detección con confianza: " + bestConfidence);
-                System.out.println("Caja delimitadora: " + Arrays.toString(bestBox));
-
-                ObjectDetectionResult detectionResult = new ObjectDetectionResult(
-                        bestBox[0], bestBox[1], bestBox[2], bestBox[3], bestConfidence, "Grua"
-                );
-                results.add(detectionResult);
-
-                // Dibujar el recuadro en la imagen
-                Graphics2D graphics = image.createGraphics();
-                graphics.setColor(Color.RED);
-                graphics.setStroke(new java.awt.BasicStroke(3));
-                graphics.drawRect((int) bestBox[0], (int) bestBox[1], (int) (bestBox[2] - bestBox[0]), (int) (bestBox[3] - bestBox[1]));
-                graphics.dispose();
-
-                // Guardar la imagen con el recuadro en el disco
-                String outputImagePath = "C:\\Users\\user\\Desktop\\detected_image.jpg";
-                File outputfile = new File(outputImagePath);
-                ImageIO.write(image, "jpg", outputfile);
-
-                System.out.println("Imagen guardada en: " + outputImagePath);
-            }
+            // Guardar la imagen con el recuadro en el disco
+            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_vehicle_image.jpg";
+            File outputfile = new File(outputImagePath);
+            ImageIO.write(image, "jpg", outputfile);
+            System.out.println("Imagen guardada en: " + outputImagePath);
 
             // Liberar los recursos
             inputTensor.close();
@@ -449,15 +463,13 @@ public class ObjectDetectionService {
         }
 
         // Envolver los resultados en un contenedor
-        ObjectDetectionContainer cont = new ObjectDetectionContainer();
-        cont.setObjects(results);
-        List<ObjectDetectionContainer> l = new ArrayList<>();
-        l.add(cont);
         return results;
     }
 
-    public List<ObjectDetectionResult> performPalletDetection (MultipartFile imageFile,Long proyectoId) {
+
+    public List<ObjectDetectionResult> performPalletDetection(MultipartFile imageFile, Long proyectoId) {
         List<ObjectDetectionResult> results = new ArrayList<>();
+        float iouThreshold = 0.5f;  // Umbral para considerar que dos cajas representan el mismo objeto
 
         try {
             // Cargar el modelo ONNX
@@ -480,9 +492,6 @@ public class ObjectDetectionService {
             System.out.println("Forma del tensor de salida: " + Arrays.toString(outputShape));
 
             // Procesar la salida del tensor
-            float bestConfidence = 0.0f;
-            float[] bestBox = null;
-
             for (int i = 0; i < outputData.length; i++) {
                 for (int j = 0; j < outputData[i][0].length; j++) {
                     // Descomponemos las 5 características
@@ -492,46 +501,54 @@ public class ObjectDetectionService {
                     float height = outputData[i][3][j];
                     float confidence = outputData[i][4][j];
 
-                    // Filtrar por confianza y buscar la detección con mayor confianza
-                    if (confidence > bestConfidence) {
-                        bestConfidence = confidence;
-
+                    // Filtrar por confianza
+                    if (confidence > 0.4) {
                         // Convertir de coordenadas centrales a esquinas
                         float x1 = cx - width / 2;
                         float y1 = cy - height / 2;
                         float x2 = cx + width / 2;
                         float y2 = cy + height / 2;
 
-                        // Actualizar la mejor caja delimitadora
-                        bestBox = new float[]{x1, y1, x2, y2};
+                        // Crear la nueva caja delimitadora
+                        float[] newBox = new float[]{x1, y1, x2, y2};
+                        boolean esCajaDuplicada = false;
+                        for (ObjectDetectionResult resultDet : results) {
+                            float existingX1 = (float) (resultDet.getX() - resultDet.getWeight() / 2);
+                            float existingY1 = (float) (resultDet.getY() - resultDet.getHeight() / 2);
+                            float existingX2 = (float) (resultDet.getX() + resultDet.getWeight() / 2);
+                            float existingY2 = (float) (resultDet.getY() + resultDet.getHeight() / 2);
+                            float[] existingBox = new float[]{existingX1, existingY1, existingX2, existingY2};
+
+                            // Calcular IoU y verificar duplicados
+                            float iou = calcularIoU(newBox, existingBox);
+                            if (iou > iouThreshold) {
+                                esCajaDuplicada = true;
+                                break;
+                            }
+                        }
+
+                        // Si no es duplicada, añadir la detección
+                        if (!esCajaDuplicada) {
+                            ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, confidence, "Pallet");
+                            results.add(detectionResult);
+                            deteccionService.crearDeteccion(new DeteccionServiceDto(null, proyectoId, null, "Pallet", x1, y1, x2, y2, confidence));
+
+                            // Dibujar la detección en la imagen
+                            Graphics2D graphics = image.createGraphics();
+                            graphics.setColor(Color.BLUE);
+                            graphics.setStroke(new java.awt.BasicStroke(3));
+                            graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+                            graphics.dispose();
+                        }
                     }
                 }
             }
 
-            // Almacenar la mejor detección si tiene suficiente confianza
-            if (bestConfidence > 0.5) {
-                System.out.println("Mejor detección con confianza: " + bestConfidence);
-                System.out.println("Caja delimitadora: " + Arrays.toString(bestBox));
-
-                ObjectDetectionResult detectionResult = new ObjectDetectionResult(
-                        bestBox[0], bestBox[1], bestBox[2], bestBox[3], bestConfidence, "Vehicle"
-                );
-                results.add(detectionResult);
-
-                // Dibujar el recuadro en la imagen
-                Graphics2D graphics = image.createGraphics();
-                graphics.setColor(Color.RED);
-                graphics.setStroke(new java.awt.BasicStroke(3));
-                graphics.drawRect((int) bestBox[0], (int) bestBox[1], (int) (bestBox[2] - bestBox[0]), (int) (bestBox[3] - bestBox[1]));
-                graphics.dispose();
-
-                // Guardar la imagen con el recuadro en el disco
-                String outputImagePath = "C:\\Users\\user\\Desktop\\detected_image.jpg";
-                File outputfile = new File(outputImagePath);
-                ImageIO.write(image, "jpg", outputfile);
-
-                System.out.println("Imagen guardada en: " + outputImagePath);
-            }
+            // Guardar la imagen con el recuadro en el disco
+            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_image.jpg";
+            File outputfile = new File(outputImagePath);
+            ImageIO.write(image, "jpg", outputfile);
+            System.out.println("Imagen guardada en: " + outputImagePath);
 
             // Liberar los recursos
             inputTensor.close();
@@ -543,10 +560,10 @@ public class ObjectDetectionService {
             e.printStackTrace();
         }
 
-        // Envolver los resultados en un contenedor
-
+        // Retornar los resultados
         return results;
     }
+
 
     // Método para encontrar el índice del valor máximo en un array
     public static int argMax(float[] scores) {

@@ -33,6 +33,16 @@ public class DeteccionController {
                         ))
                 .collect(Collectors.toList());
     }
+
+    // Método para obtener detecciones por proyecto y día (fecha)
+    @GetMapping("/get/{proyecto}/{dia}")
+    public List<DeteccionApiDto> getDeteccionesByProyectoAndDia(@PathVariable Long proyecto, @PathVariable Date dia) {
+        List<DeteccionServiceDto> detecciones = deteccionService.findByProyectoAndDia(proyecto, dia);
+        return detecciones.stream()
+                .map(this::convertirADeteccionApiDto)
+                .collect(Collectors.toList());
+    }
+
     @GetMapping("/find/all")
     public List<DeteccionApiDto> getAllDetecciones() {
         List<DeteccionServiceDto> detecciones = deteccionService.findAll();
