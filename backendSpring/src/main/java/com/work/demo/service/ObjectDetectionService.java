@@ -3,11 +3,11 @@ package com.work.demo.service;
 import ai.onnxruntime.*;
 import com.work.demo.service.dto.AnalisisReturnDto;
 import com.work.demo.service.dto.DeteccionServiceDto;
+import com.work.demo.service.dto.ObjetoImagen;
 import com.work.demo.service.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.work.demo.rest.dto.ObjectDetectionContainer;
 import com.work.demo.rest.dto.ObjectDetectionResult;
 
 
@@ -22,6 +22,8 @@ import java.util.List;
 
 @Service
 public class ObjectDetectionService {
+
+    private BufferedImage imagen;
     @Autowired
     private DeteccionService deteccionService;
     public AnalisisReturnDto performAllDetectionsAndReturnImage(MultipartFile imageFile,Long proyectoId) {
@@ -183,10 +185,13 @@ public class ObjectDetectionService {
             // Cargar el modelo ONNX
             OrtEnvironment env = OrtEnvironment.getEnvironment();
             OrtSession session = env.createSession("C:\\Users\\user\\Desktop\\wsPagWeb\\trainsExitosos\\conesTrain\\weights\\best.onnx", new OrtSession.SessionOptions());
-
-            // Leer la imagen desde el MultipartFile y redimensionarla
-            BufferedImage image = resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
-
+            BufferedImage image=null;
+            if(this.imagen==null) {
+                // Leer la imagen desde el MultipartFile y redimensionarla
+                 image=resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
+            }else{
+                image=this.imagen;
+            }
             // Convertir la imagen a un tensor de entrada
             float[][][][] inputData = ImageUtils.convertImageTo4DFloatArray(image);
             OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputData);
@@ -256,7 +261,8 @@ public class ObjectDetectionService {
 
 
                 // Guardar la imagen con el recuadro en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_image.jpg";
+            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_cone_image.jpg";
+            this.imagen=image;
             File outputfile = new File(outputImagePath);
             ImageIO.write(image, "jpg", outputfile);
             System.out.println("Imagen guardada en: " + outputImagePath);
@@ -285,9 +291,13 @@ public class ObjectDetectionService {
             OrtEnvironment env = OrtEnvironment.getEnvironment();
             OrtSession session = env.createSession("C:\\Users\\user\\Desktop\\wsPagWeb\\trainsExitosos\\VehiculosTrain\\weights\\best.onnx", new OrtSession.SessionOptions());
 
-            // Leer la imagen desde el MultipartFile y redimensionarla
-            BufferedImage image = resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
-
+            BufferedImage image=null;
+            if(this.imagen==null) {
+                // Leer la imagen desde el MultipartFile y redimensionarla
+                image=resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
+            }else{
+                image=this.imagen;
+            }
             // Convertir la imagen a un tensor de entrada
             float[][][][] inputData = ImageUtils.convertImageTo4DFloatArray(image);
             OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputData);
@@ -352,7 +362,8 @@ public class ObjectDetectionService {
             }
 
             // Guardar la imagen con las detecciones en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_image.jpg";
+            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_vehicle_image.jpg";
+            this.imagen=image;
             File outputfile = new File(outputImagePath);
             ImageIO.write(image, "jpg", outputfile);
             System.out.println("Imagen guardada en: " + outputImagePath);
@@ -382,8 +393,13 @@ public class ObjectDetectionService {
             OrtSession session = env.createSession("C:\\Users\\user\\Desktop\\wsPagWeb\\trainsExitosos\\gruasTrain\\weights\\best.onnx", new OrtSession.SessionOptions());
 
             // Leer la imagen desde el MultipartFile y redimensionarla
-            BufferedImage image = resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
-
+            BufferedImage image=null;
+            if(this.imagen==null) {
+                // Leer la imagen desde el MultipartFile y redimensionarla
+                image=resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
+            }else{
+                image=this.imagen;
+            }
             // Convertir la imagen a un tensor de entrada
             float[][][][] inputData = ImageUtils.convertImageTo4DFloatArray(image);
             OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputData);
@@ -447,7 +463,8 @@ public class ObjectDetectionService {
             }
 
             // Guardar la imagen con el recuadro en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_vehicle_image.jpg";
+            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_grua_image.jpg";
+            this.imagen=image;
             File outputfile = new File(outputImagePath);
             ImageIO.write(image, "jpg", outputfile);
             System.out.println("Imagen guardada en: " + outputImagePath);
@@ -477,8 +494,13 @@ public class ObjectDetectionService {
             OrtSession session = env.createSession("C:\\Users\\user\\Desktop\\wsPagWeb\\trainsExitosos\\palletTrain\\weights\\best.onnx", new OrtSession.SessionOptions());
 
             // Leer la imagen desde el MultipartFile y redimensionarla
-            BufferedImage image = resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
-
+            BufferedImage image=null;
+            if(this.imagen==null) {
+                // Leer la imagen desde el MultipartFile y redimensionarla
+                image=resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
+            }else{
+                image=this.imagen;
+            }
             // Convertir la imagen a un tensor de entrada
             float[][][][] inputData = ImageUtils.convertImageTo4DFloatArray(image);
             OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputData);
@@ -545,7 +567,8 @@ public class ObjectDetectionService {
             }
 
             // Guardar la imagen con el recuadro en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_image.jpg";
+            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_pallet_image.jpg";
+            this.imagen=image;
             File outputfile = new File(outputImagePath);
             ImageIO.write(image, "jpg", outputfile);
             System.out.println("Imagen guardada en: " + outputImagePath);
@@ -581,6 +604,31 @@ public class ObjectDetectionService {
         g.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
         g.dispose();
         return resizedImage;
+    }
+
+    public ObjetoImagen performAllDetections (MultipartFile image, Long proyectId) {
+        List<ObjectDetectionResult> combinedResults = new ArrayList<>();
+
+        System.out.println("Comienzo analisis Vehiculos");
+        // Realizar la detección de vehículos
+        List<ObjectDetectionResult> vehicleDetections = performVehicleDetection(image,proyectId);
+        combinedResults.addAll(vehicleDetections);
+        System.out.println("Comienzo analisis gruas");
+        // Realizar la detección de grúas
+        List<ObjectDetectionResult> gruasDetections = performGruasDetection(image,proyectId);
+        combinedResults.addAll(gruasDetections);
+        System.out.println("Comienzo analisis pallets");
+        // Realizar la detección de palets
+        List<ObjectDetectionResult> palletDetections = performPalletDetection(image,proyectId);
+        combinedResults.addAll(palletDetections);
+        System.out.println("Comienzo analisis conos");
+        List<ObjectDetectionResult> coneDetections = performConeDetection(image,proyectId);
+        combinedResults.addAll(coneDetections);
+        ObjetoImagen obj=new ObjetoImagen();
+        obj.setObjetos(combinedResults);
+        obj.setImage(this.imagen);
+        // Devolver la lista combinada de todas las detecciones
+        return obj;
     }
 }
 
