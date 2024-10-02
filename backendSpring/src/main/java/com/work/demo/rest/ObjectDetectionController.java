@@ -1,13 +1,20 @@
 package com.work.demo.rest;
 
 import com.work.demo.rest.dto.ObjectDetectionResult;
+import com.work.demo.service.DeteccionService;
+import com.work.demo.service.dto.AnalisisReturnDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.work.demo.rest.dto.ObjectDetectionContainer;
 import com.work.demo.rest.dto.ObjectPruebaDto;
 import com.work.demo.service.ObjectDetectionService;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,22 +22,18 @@ import java.util.List;
 public class ObjectDetectionController {
     @Autowired
     private ObjectDetectionService obj;
-    @CrossOrigin(origins = "http://localhost:4200")
+    @Autowired
+    private DeteccionService deteccionService;
     @PostMapping("/detect")
-    public List<ObjectDetectionContainer> detectObjects(@RequestParam("image") MultipartFile image) {
+    public List<ObjectDetectionResult> detectObjects(@RequestParam("image") MultipartFile image,@RequestParam("proyectId")Long proyectId) {
         List<ObjectDetectionResult> objectList = new ArrayList<>();
-      //  objectList.add(new ObjectDetectionResult("Person", 0.95f));
-        //  objectList.add(new ObjectDetectionResult("Dog", 0.90f));
-        //  objectList.add(new ObjectDetectionResult("Car", 0.85f));
-        // objectList.add(new ObjectDetectionResult("Bicycle", 0.80f));
-        //  objectList.add(new ObjectDetectionResult("Cat", 0.75f));
-
-        ObjectDetectionContainer container = new ObjectDetectionContainer(objectList,5);
-
-        List<ObjectDetectionContainer> results = performObjectDetection(image);//new ArrayList<>();
-        results.add(container);
+        //if(deteccionService.checkToday()){
+            //throw new RuntimeException("Hoy ya se ha subido foto");
+        //}
+        List<ObjectDetectionResult> results = performObjectDetection(image,proyectId);
         return results;
     }
+    //Upload file o algo asi
     @GetMapping("/list")
     public List<ObjectPruebaDto> detectObjects() {
         List<ObjectPruebaDto> l=new ArrayList<>();
@@ -40,11 +43,35 @@ public class ObjectDetectionController {
         l.add(o);
         return l;
     }
-    private List<ObjectDetectionContainer> performObjectDetection(MultipartFile image) {
-        // Aquí es donde se realizaría la detección de objetos utilizando ONNX Runtime Java
-        // Procesar la imagen, cargar el modelo ONNX y obtener los resultados de detección
+    @RequestMapping("/detections/image")
+    public AnalisisReturnDto getDetectionImage(@RequestParam("image") MultipartFile imageFile,@RequestParam("proyectId")Long proyectId) {
+        AnalisisReturnDto response=obj.performAllDetectionsAndReturnImage(imageFile,proyectId);
+        return response;
+    }
 
-        return obj.performObjectDetection(image);
+    private List<ObjectDetectionResult> performObjectDetection(MultipartFile image,Long proyectId) {
+        // Lista para almacenar los resultados combinados de todas las detecciones
+        List<ObjectDetectionResult> combinedResults = new ArrayList<>();
+
+        // Realizar la detección de conos
+
+        System.out.println("Comienzo analisis Vehiculos");
+        // Realizar la detección de vehículos
+        List<ObjectDetectionResult> vehicleDetections = obj.performVehicleDetection(image,proyectId);
+        combinedResults.addAll(vehicleDetections);
+        System.out.println("Comienzo analisis gruas");
+        // Realizar la detección de grúas
+        List<ObjectDetectionResult> gruasDetections = obj.performGruasDetection(image,proyectId);
+        combinedResults.addAll(gruasDetections);
+        System.out.println("Comienzo analisis pallets");
+        // Realizar la detección de palets
+        List<ObjectDetectionResult> palletDetections = obj.performPalletDetection(image,proyectId);
+        combinedResults.addAll(palletDetections);
+        System.out.println("Comienzo analisis conos");
+        List<ObjectDetectionResult> coneDetections = obj.performConeDetection(image,proyectId);
+        combinedResults.addAll(coneDetections);
+        // Devolver la lista combinada de todas las detecciones
+        return combinedResults;
     }
 }
 

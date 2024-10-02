@@ -8,10 +8,11 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ObjectDetectionResult {
-    private float x;
-    private float y;
-    private float weight;
-    private float height;
+    private double x;
+    private double y;
+    private double weight;
+    private double height;
 
-    private float confidence;
+    private double confidence;
+    private String label;
 }
