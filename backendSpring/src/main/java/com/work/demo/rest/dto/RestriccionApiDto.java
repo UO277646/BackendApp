@@ -13,13 +13,31 @@ import java.sql.Date;
 public class RestriccionApiDto {
     private Long idRestriccion; // CamelCase
 
+
+    private Long proyectoId;
+
     private String objeto;
 
     private Date fechaDesde;
 
     private Date fechaHasta;
 
-    private int cantidad;
 
-    private Long idProyecto;
+    private int cantidadMin;
+    private int cantidadMax;
+    private Boolean cumplida;
+
+    @Override
+    public String toString () {
+        return "RestriccionApiDto{" +
+                "idRestriccion=" + idRestriccion +
+                ", proyectoId=" + proyectoId +
+                ", objeto='" + objeto + '\'' +
+                ", fechaDesde=" + fechaDesde +
+                ", fechaHasta=" + fechaHasta +
+                ", cantidadMin=" + cantidadMin +
+                ", cantidadMax=" + cantidadMax +
+                ", cumplida=" + cumplida +
+                '}';
+    }
 }

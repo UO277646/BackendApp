@@ -626,9 +626,20 @@ public class ObjectDetectionService {
         combinedResults.addAll(coneDetections);
         ObjetoImagen obj=new ObjetoImagen();
         obj.setObjetos(combinedResults);
-        obj.setImage(this.imagen);
+        obj.setImage(encodeImageToBase64(this.imagen));
+        this.imagen=null;
         // Devolver la lista combinada de todas las detecciones
         return obj;
+    }
+    public static String encodeImageToBase64(BufferedImage image) {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", outputStream);  // Cambia el formato según corresponda
+            return Base64.getEncoder().encodeToString(outputStream.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
 

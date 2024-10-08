@@ -13,5 +13,5 @@ import java.util.List;
 @Setter
 public class ObjetoImagen {
     private List<ObjectDetectionResult> objetos;
-    private BufferedImage image;
+    private String image;
 }

@@ -26,12 +26,12 @@ public class ObjectDetectionController {
     @Autowired
     private DeteccionService deteccionService;
     @PostMapping("/detect")
-    public List<ObjectDetectionResult> detectObjects(@RequestParam("image") MultipartFile image,@RequestParam("proyectId")Long proyectId) {
+    public ObjetoImagen detectObjects(@RequestParam("image") MultipartFile image,@RequestParam("proyectId")Long proyectId) {
         List<ObjectDetectionResult> objectList = new ArrayList<>();
         //if(deteccionService.checkToday()){
             //throw new RuntimeException("Hoy ya se ha subido foto");
         //}
-        List<ObjectDetectionResult> results = performObjectDetection(image,proyectId).getObjetos();
+        ObjetoImagen results = performObjectDetection(image,proyectId);
         return results;
     }
     //Upload file o algo asi

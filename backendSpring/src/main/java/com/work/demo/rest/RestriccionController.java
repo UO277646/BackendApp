@@ -33,6 +33,7 @@ public class RestriccionController {
     @PostMapping("/create")
     public RestriccionApiDto createRestriccion(@RequestBody RestriccionApiDto restriccionApiDto) {
         RestriccionServiceDto restriccionDto = convertirARestriccionServiceDto(restriccionApiDto);
+        System.out.println(restriccionApiDto);
         RestriccionServiceDto nuevaRestriccion = restriccionService.crearRestriccion(restriccionDto);
         return convertirARestriccionApiDto(nuevaRestriccion);
     }
@@ -56,7 +57,8 @@ public class RestriccionController {
                 .objeto(restriccionDto.getObjeto())
                 .fechaDesde(restriccionDto.getFechaDesde())
                 .fechaHasta(restriccionDto.getFechaHasta())
-                .cantidad(restriccionDto.getCantidad())
+                .cantidadMin(restriccionDto.getCantidadMin())
+                .cantidadMax(restriccionDto.getCantidadMax())
                 .build();
     }
 
@@ -66,8 +68,9 @@ public class RestriccionController {
                 .objeto(restriccionApiDto.getObjeto())
                 .fechaDesde(restriccionApiDto.getFechaDesde())
                 .fechaHasta(restriccionApiDto.getFechaHasta())
-                .cantidad(restriccionApiDto.getCantidad())
-                .proyectoId(restriccionApiDto.getIdProyecto())
+                .cantidadMin(restriccionApiDto.getCantidadMin())
+                .cantidadMax(restriccionApiDto.getCantidadMax())
+                .proyectoId(restriccionApiDto.getProyectoId())
                 .build();
     }
 }

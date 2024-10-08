@@ -27,6 +27,11 @@ public class Restriccion {
 
     @Column(name = "fecha_hasta") // Mapeo explícito de la columna fecha_hasta
     private Date fechaHasta;
+    @Column(name = "cantidad_min") // Mapeo explícito de la columna fecha_hasta
+    private int cantidadMin;
 
-    private int cantidad;
+    @Column(name = "cantidad_max") // Mapeo explícito de la columna fecha_hasta
+    private int cantidadMax;
+
+    private Boolean cumplida;
 }

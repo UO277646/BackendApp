@@ -19,10 +19,9 @@ public class ProyectoController {
     @Autowired
     private ProyectoService proyectoService;
 
-    @GetMapping("/find/all")
-    public List<ProyectoApiDto> getAllProyectos() {
-        List<ProyectoServiceDto> proyectos = proyectoService.findAll();
-        // Convertimos de ProyectoServiceDto a ProyectoApiDto
+    @GetMapping("/find/proyectos/{email}/{nombre}")
+    public List<ProyectoApiDto> getProyectosByEmail(@PathVariable String email,@PathVariable String nombre) {
+        List<ProyectoServiceDto> proyectos = proyectoService.findByEmail(email,nombre);
         return proyectos.stream()
                 .map(this::convertirAProyectoApiDto)
                 .collect(Collectors.toList());
@@ -40,10 +39,10 @@ public class ProyectoController {
         List<RestriccionServiceDto> restricciones = proyectoService.findRestrict(id);
         // Convertimos de RestriccionServiceDto a RestriccionApiDto
         return restricciones.stream()
-                .map(restriccion -> new RestriccionApiDto(restriccion.getIdRestriccion(),
+                .map(restriccion -> new RestriccionApiDto(restriccion.getIdRestriccion(),id,
                         restriccion.getObjeto(),
                         restriccion.getFechaDesde(),
-                        restriccion.getFechaHasta(),restriccion.getCantidad(),id))
+                        restriccion.getFechaHasta(),restriccion.getCantidadMin(),restriccion.getCantidadMax(),restriccion.getCumplida()))
                 .collect(Collectors.toList());
     }
 
@@ -79,6 +78,8 @@ public class ProyectoController {
         apiDto.setIdProyecto(proyectoDto.getIdProyecto());
         apiDto.setNombre(proyectoDto.getNombre());
         apiDto.setFechaCreacion(proyectoDto.getFechaCreacion());
+        apiDto.setUser(proyectoDto.getUser());
+        apiDto.setMinConf(proyectoDto.getMinConf());
         return apiDto;
     }
 
@@ -87,6 +88,8 @@ public class ProyectoController {
         serviceDto.setIdProyecto(apiDto.getIdProyecto());
         serviceDto.setNombre(apiDto.getNombre());
         serviceDto.setFechaCreacion(apiDto.getFechaCreacion());
+        serviceDto.setUser(apiDto.getUser());
+        serviceDto.setMinConf(apiDto.getMinConf());
         return serviceDto;
     }
 }
