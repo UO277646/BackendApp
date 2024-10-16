@@ -85,6 +85,9 @@ public class ProyectoService {
     @Transactional
     public ProyectoServiceDto crearProyecto(ProyectoServiceDto proyectoDto) {
         try {
+            if(proyectoDto==null || proyectoDto.getNombre()==null  || proyectoDto.getMinConf()<0  ){
+                throw new RuntimeException("Error al crear el proyecto");
+            }
             Proyecto nuevoProyecto = new Proyecto();
             Usuario usuario=usuarioService.findByEmail(proyectoDto.getUser());
             nuevoProyecto.setUsuario(usuario);
@@ -142,8 +145,9 @@ public class ProyectoService {
 
 // Iteramos sobre cada restricción y verificamos solo si fechaHasta es anterior o igual a la fecha actual
         restricciones.forEach(restriccion -> {
+            System.out.println(restriccion);
             // Solo evaluamos las restricciones que están dentro del rango de fechas
-            if (restriccion.getFechaHasta().before(fechaActual) || restriccion.getFechaHasta().equals(fechaActual) && restriccion.getCumplida()==null) {
+            if ((restriccion.getFechaHasta().before(fechaActual) || restriccion.getFechaHasta().equals(fechaActual)) && restriccion.getCumplida()==null) {
 
                 // Filtramos las detecciones que cumplen con el intervalo de fechas y el objeto
                 List<Deteccion> deteccionesFiltradas = detecciones.stream()
@@ -220,6 +224,12 @@ public class ProyectoService {
         }catch(Exception e){
             throw e;
         }
+    }
+
+    public Boolean checkProject (Long projectId, String email) {
+        Long usuarioId=usuarioService.findByEmail(email).getUserId();
+        Proyecto p=proyectoRepository.findById(projectId).get();
+        return p.getUsuario().getUserId()==usuarioId;
     }
 }
 

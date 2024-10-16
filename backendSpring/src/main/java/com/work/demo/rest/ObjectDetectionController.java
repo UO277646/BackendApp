@@ -27,6 +27,7 @@ public class ObjectDetectionController {
     private DeteccionService deteccionService;
     @PostMapping("/detect")
     public ObjetoImagen detectObjects(@RequestParam("image") MultipartFile image,@RequestParam("proyectId")Long proyectId) {
+
         List<ObjectDetectionResult> objectList = new ArrayList<>();
         //if(deteccionService.checkToday()){
             //throw new RuntimeException("Hoy ya se ha subido foto");

@@ -33,5 +33,19 @@ public class Restriccion {
     @Column(name = "cantidad_max") // Mapeo explícito de la columna fecha_hasta
     private int cantidadMax;
 
+    @Override
+    public String toString () {
+        return "Restriccion{" +
+                "idRestriccion=" + idRestriccion +
+                ", proyecto=" + proyecto +
+                ", objeto='" + objeto + '\'' +
+                ", fechaDesde=" + fechaDesde +
+                ", fechaHasta=" + fechaHasta +
+                ", cantidadMin=" + cantidadMin +
+                ", cantidadMax=" + cantidadMax +
+                ", cumplida=" + cumplida +
+                '}';
+    }
+
     private Boolean cumplida;
 }

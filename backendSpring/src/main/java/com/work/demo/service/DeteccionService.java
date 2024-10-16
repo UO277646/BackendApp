@@ -150,10 +150,16 @@ public class DeteccionService {
 
     public List<DeteccionServiceDto> findByFotoId (Date fotoId) {
         // Llama al repositorio para buscar las detecciones por fotoId
+        if(fotoId==null){
+            throw new RuntimeException("Foto null");
+        }
         return deteccionRepository.findByFotoId(fotoId);
     }
 
     public List<DeteccionServiceDto> findByProyectoAndDia (Long proyecto, Date dia) {
+        if(proyecto==null || dia==null){
+            throw new RuntimeException("Proyecto o dia vacio");
+        }
         List<Deteccion> detecciones = deteccionRepository.findByProyectoIdAndFotoId(proyecto, dia);
 
         // Convertimos la entidad Deteccion a DeteccionServiceDto

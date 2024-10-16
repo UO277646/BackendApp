@@ -79,7 +79,13 @@
 			<artifactId>google-http-client-jackson2</artifactId>
 			<version>1.41.8</version> <!-- Asegúrate de usar la versión más reciente disponible -->
 		</dependency>
-	</dependencies>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt</artifactId>
+			<version>0.12.6</version>
+		</dependency>
+
+    </dependencies>
 
 	<build>
 		<plugins>

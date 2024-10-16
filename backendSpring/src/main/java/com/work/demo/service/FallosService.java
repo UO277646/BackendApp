@@ -101,6 +101,9 @@ public class FallosService {
     }
 
     public List<FallosServiceDto> obtenerTodosFallosRes (Long idRec) {
+        if(idRec==null){
+            throw new RuntimeException("Error al obtener la lista de fallos");
+        }
         try {
             List<Fallo> fallos = fallosRepository.findByRestriccion(idRec);
             return fallos.stream()
