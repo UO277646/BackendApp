@@ -28,4 +28,9 @@ public class Proyecto {
 
     @Column(name = "fecha_creacion") // Mapeo explícito de la columna "fecha_creacion"
     private Date fechaCreacion;
+    @Column(name = "min_conf") // Mapeo explícito de la columna "fecha_creacion"
+    private double minConf;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false) // Mapeo explícito a proyecto_id
+    private Usuario usuario;
 }

@@ -15,4 +15,6 @@ public class ProyectoApiDto {
     private String nombre;
     private Date fechaCreacion;
 
+    private double minConf;
+    private String user;
 }

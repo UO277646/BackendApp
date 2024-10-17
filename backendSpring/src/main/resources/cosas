@@ -1,0 +1,106 @@
+public List<ObjectDetectionResult> performConeDetection (MultipartFile imageFile,Long proyectoId) {
+        List<ObjectDetectionResult> results = new ArrayList<>();
+        float iouThreshold = 0.5f;  // Umbral para considerar que dos cajas representan el mismo objeto
+
+        try {
+            Path modelPath = Paths.get(ClassLoader.getSystemResource("models/cono/best.onnx").toURI());
+            // Cargar el modelo ONNX
+            OrtEnvironment env = OrtEnvironment.getEnvironment();
+            OrtSession session = env.createSession(modelPath.toString(), new OrtSession.SessionOptions());
+            BufferedImage image=null;
+            if(this.imagen==null) {
+                // Leer la imagen desde el MultipartFile y redimensionarla
+                 image=resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
+            }else{
+                image=this.imagen;
+            }
+            // Convertir la imagen a un tensor de entrada
+            float[][][][] inputData = ImageUtils.convertImageTo4DFloatArray(image);
+            OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputData);
+            Map<String, OnnxTensorLike> inputs = Collections.singletonMap("images", inputTensor);
+
+            // Realizar la inferencia
+            OrtSession.Result result = session.run(inputs);
+            OnnxTensor outputTensor = (OnnxTensor) result.get("output0").get();
+            float[][][] outputData = (float[][][]) outputTensor.getValue();
+            long[] outputShape = outputTensor.getInfo().getShape();
+            System.out.println("Forma del tensor de salida: " + Arrays.toString(outputShape));
+
+            // Procesar la salida del tensor
+            float bestConfidence = 0.0f;
+
+
+            for (int i = 0; i < outputData.length; i++) {
+                for (int j = 0; j < outputData[i][0].length; j++) {
+                    // Descomponemos las 5 características
+                    float cx = outputData[i][0][j];
+                    float cy = outputData[i][1][j];
+                    float width = outputData[i][2][j];
+                    float height = outputData[i][3][j];
+                    float confidence = outputData[i][4][j];
+
+                    // Filtrar por confianza y buscar la detección con mayor confianza
+                    if (confidence >= this.minConfig) {
+                        // Convertir de coordenadas centrales a esquinas
+                        float x1 = cx - width / 2;
+                        float y1 = cy - height / 2;
+                        float x2 = cx + width / 2;
+                        float y2 = cy + height / 2;
+
+                        // Actualizar la mejor caja delimitadora
+                        float[]  newBox = new float[]{x1, y1, x2, y2};
+                        boolean esCajaDuplicada = false;
+                        for (ObjectDetectionResult resultDet : results) {
+                            float existingX1 = (float) (resultDet.getX() - resultDet.getWeight() / 2);
+                            float existingY1 = (float) (resultDet.getY() - resultDet.getHeight() / 2);
+                            float existingX2 = (float) (resultDet.getX() + resultDet.getWeight() / 2);
+                            float existingY2 = (float) (resultDet.getY() + resultDet.getHeight() / 2);
+                            float[] existingBox = new float[]{existingX1, existingY1, existingX2, existingY2};
+
+                            float iou = calcularIoU(newBox, existingBox);
+                            if (iou > iouThreshold) {
+                                esCajaDuplicada = true;
+                                break;
+                            }
+                        }
+                        if(!esCajaDuplicada){
+                            ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, confidence, "Cono");
+                            results.add(detectionResult);
+                            deteccionService.crearDeteccion(new DeteccionServiceDto(null, proyectoId, null, "Cono", x1, y1, x2, y2, confidence));
+
+                            // Dibujar la detección en la imagen
+                            Graphics2D graphics = image.createGraphics();
+                            graphics.setColor(Color.RED);
+                            graphics.setStroke(new java.awt.BasicStroke(3));
+                            graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+                            graphics.dispose();
+                        }
+                    }
+                }
+            }
+
+            // Almacenar la mejor detección si tiene suficiente confianza
+
+
+                // Guardar la imagen con el recuadro en el disco
+            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_cone_image.jpg";
+            this.imagen=image;
+            File outputfile = new File(outputImagePath);
+            ImageIO.write(image, "jpg", outputfile);
+            System.out.println("Imagen guardada en: " + outputImagePath);
+            // Liberar los recursos
+            inputTensor.close();
+            outputTensor.close();
+            session.close();
+            env.close();
+
+        } catch (OrtException | IOException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Envolver los resultados en un contenedor
+
+        return results;
+    }

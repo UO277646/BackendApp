@@ -28,7 +28,9 @@ public class RestriccionService {
                 .objeto(restriccion.getObjeto())
                 .fechaDesde(restriccion.getFechaDesde())
                 .fechaHasta(restriccion.getFechaHasta())
-                .cantidad(restriccion.getCantidad())
+                .cantidadMin(restriccion.getCantidadMin())
+                .cantidadMax(restriccion.getCantidadMax())
+                .cumplida(restriccion.getCumplida())
                 .build();
     }
 
@@ -57,6 +59,9 @@ public class RestriccionService {
     @Transactional
     // Método para crear una nueva restricción
     public RestriccionServiceDto crearRestriccion(RestriccionServiceDto restriccionDto) {
+        if(restriccionDto==null || restriccionDto.getCantidadMin()<0 || restriccionDto.getCantidadMax() < restriccionDto.getCantidadMin()){
+            throw new RuntimeException("Error al crear el proyecto");
+        }
         try {
             Restriccion nuevaRestriccion = new Restriccion();
             Proyecto p=proyectoService.obtenerProyectoPorIdEntidad(restriccionDto.getProyectoId());
@@ -64,7 +69,9 @@ public class RestriccionService {
             nuevaRestriccion.setObjeto(restriccionDto.getObjeto());
             nuevaRestriccion.setFechaDesde(restriccionDto.getFechaDesde());
             nuevaRestriccion.setFechaHasta(restriccionDto.getFechaHasta());
-            nuevaRestriccion.setCantidad(restriccionDto.getCantidad());
+            nuevaRestriccion.setCantidadMin(restriccionDto.getCantidadMin());
+            nuevaRestriccion.setCantidadMax(restriccionDto.getCantidadMax());
+            nuevaRestriccion.setCumplida(null);
             Restriccion restriccionGuardada = restriccionRepository.save(nuevaRestriccion);
             return convertirARestriccionDto(restriccionGuardada);
         } catch (Exception e) {
@@ -82,7 +89,9 @@ public class RestriccionService {
             restriccionExistente.setObjeto(restriccionActualizadaDto.getObjeto());
             restriccionExistente.setFechaDesde(restriccionActualizadaDto.getFechaDesde());
             restriccionExistente.setFechaHasta(restriccionActualizadaDto.getFechaHasta());
-            restriccionExistente.setCantidad(restriccionActualizadaDto.getCantidad());
+            restriccionExistente.setCantidadMin(restriccionActualizadaDto.getCantidadMin());
+            restriccionExistente.setCantidadMax(restriccionActualizadaDto.getCantidadMax());
+            restriccionExistente.setCumplida(restriccionActualizadaDto.getCumplida());
             Restriccion restriccionActualizada = restriccionRepository.save(restriccionExistente);
             return convertirARestriccionDto(restriccionActualizada);
         } catch (Exception e) {
