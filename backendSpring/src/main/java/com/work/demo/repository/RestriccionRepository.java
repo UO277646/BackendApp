@@ -10,9 +10,11 @@ import java.util.List;
 
 @Repository
 public interface RestriccionRepository extends JpaRepository<Restriccion,Long> {
-    @Query("SELECT new com.work.demo.service.dto.RestriccionServiceDto(r.idRestriccion, r.proyecto.idProyecto, r.objeto, r.fechaDesde, r.fechaHasta,r.cantidadMin, r.cantidadMax,r.cumplida) " +
+    @Query("SELECT new com.work.demo.service.dto.RestriccionServiceDto(r.idRestriccion, r.proyecto.idProyecto, r.objeto, r.fechaDesde, r.fechaHasta,r.cantidadMin, r.cantidadMax,r.cumplida,r.diaria) " +
             "FROM Restriccion r WHERE r.proyecto.idProyecto = :id")
     List<RestriccionServiceDto> findRestrictionsByProject (@Param("id")Long id);
     @Query("SELECT r FROM Restriccion r WHERE r.proyecto.idProyecto = :proyectoId" )
     List<Restriccion> findRestrictionsByProjectEntity (Long proyectoId);
+    @Query("SELECT r FROM Restriccion r WHERE r.proyecto.idProyecto = :proyectoId AND r.diaria=true" )
+    List<Restriccion> findRestrictionsByProjectDaily (Long proyectoId);
 }

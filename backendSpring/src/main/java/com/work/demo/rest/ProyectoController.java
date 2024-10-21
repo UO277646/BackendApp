@@ -42,7 +42,7 @@ public class ProyectoController {
                 .map(restriccion -> new RestriccionApiDto(restriccion.getIdRestriccion(),id,
                         restriccion.getObjeto(),
                         restriccion.getFechaDesde(),
-                        restriccion.getFechaHasta(),restriccion.getCantidadMin(),restriccion.getCantidadMax(),restriccion.getCumplida()))
+                        restriccion.getFechaHasta(),restriccion.getCantidadMin(),restriccion.getCantidadMax(),restriccion.getCumplida(),restriccion.getDiaria()))
                 .collect(Collectors.toList());
     }
 

@@ -85,7 +85,7 @@ public class ProyectoService {
     @Transactional
     public ProyectoServiceDto crearProyecto(ProyectoServiceDto proyectoDto) {
         try {
-            if(proyectoDto==null || proyectoDto.getNombre()==null  || proyectoDto.getMinConf()<0  ){
+            if(proyectoDto==null || proyectoDto.getNombre()==null  || proyectoDto.getNombre().trim().equals("") || proyectoDto.getMinConf()<0  ){
                 throw new RuntimeException("Error al crear el proyecto");
             }
             Proyecto nuevoProyecto = new Proyecto();
@@ -147,7 +147,7 @@ public class ProyectoService {
         restricciones.forEach(restriccion -> {
             System.out.println(restriccion);
             // Solo evaluamos las restricciones que están dentro del rango de fechas
-            if ((restriccion.getFechaHasta().before(fechaActual) || restriccion.getFechaHasta().equals(fechaActual)) && restriccion.getCumplida()==null) {
+            if ((restriccion.getFechaHasta().before(fechaActual) || restriccion.getFechaHasta().equals(fechaActual)) && restriccion.getCumplida()==null && !restriccion.getDiaria()) {
 
                 // Filtramos las detecciones que cumplen con el intervalo de fechas y el objeto
                 List<Deteccion> deteccionesFiltradas = detecciones.stream()
@@ -169,8 +169,9 @@ public class ProyectoService {
                     // Creamos un nuevo fallo en la base de datos cuando no se cumple la restricción
                     Fallo nuevoFallo = Fallo.builder()
                             .restriccion(restriccion)  // Asociamos la restricción que falló
-                            .datos("La restricción no se cumplió: Objeto esperado: " + restriccion.getObjeto() +
-                                    ", Cantidad detecciones: " + cantidadDetecciones)
+                            .datos("La restricción no se cumplió: Objeto esperado: " + restriccion.getObjeto() +", se esperaban entre "+restriccion.getCantidadMin()+" y "+
+                                    restriccion.getCantidadMax()+" de apariciones y son: " + cantidadDetecciones)
+                            .fecha(fechaActual)
                             .build();
 
                     // Guardamos el fallo en la base de datos

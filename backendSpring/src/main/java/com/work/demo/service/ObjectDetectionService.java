@@ -1,8 +1,7 @@
 package com.work.demo.service;
 
 import ai.onnxruntime.*;
-import com.work.demo.repository.Proyecto;
-import com.work.demo.repository.ProyectoRepository;
+import com.work.demo.repository.*;
 import com.work.demo.service.dto.AnalisisReturnDto;
 import com.work.demo.service.dto.DeteccionServiceDto;
 import com.work.demo.service.dto.ObjetoImagen;
@@ -22,8 +21,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ObjectDetectionService {
@@ -33,7 +35,13 @@ public class ObjectDetectionService {
     @Autowired
     private DeteccionService deteccionService;
     @Autowired
+    private FallosRepository fallosRepository;
+    @Autowired
+    private RestriccionRepository restriccionRepository;
+    @Autowired
     private ProyectoRepository proyectoRepository;
+    @Autowired
+    private EmailService emailService;
 
     public AnalisisReturnDto performAllDetectionsAndReturnImage(MultipartFile imageFile,Long proyectoId) {
         AnalisisReturnDto r=new AnalisisReturnDto();
@@ -141,9 +149,9 @@ public class ObjectDetectionService {
                         float[]  newBox = new float[]{x1, y1, x2, y2};
                         boolean esCajaDuplicada = false;
                         for (ObjectDetectionResult resultDet : results) {
-                            float existingX1 = (float) (resultDet.getX() - resultDet.getWeight() / 2);
+                            float existingX1 = (float) (resultDet.getX() - resultDet.getWidth() / 2);
                             float existingY1 = (float) (resultDet.getY() - resultDet.getHeight() / 2);
-                            float existingX2 = (float) (resultDet.getX() + resultDet.getWeight() / 2);
+                            float existingX2 = (float) (resultDet.getX() + resultDet.getWidth() / 2);
                             float existingY2 = (float) (resultDet.getY() + resultDet.getHeight() / 2);
                             float[] existingBox = new float[]{existingX1, existingY1, existingX2, existingY2};
 
@@ -163,6 +171,13 @@ public class ObjectDetectionService {
                             graphics.setColor(Color.RED);
                             graphics.setStroke(new java.awt.BasicStroke(3));
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+                            String label = String.format("%s: %.2f", "Cono", confidence);
+
+                            // Dibujar el texto sobre la imagen, justo encima de la caja
+                            Font font = new Font("Arial", Font.PLAIN, 16);
+                            graphics.setFont(font);
+                            graphics.drawString(label, (int) x1, (int) y1 - 5); // Posiciona el texto ligeramente por encima de la caja
+
                             graphics.dispose();
                         }
                     }
@@ -248,9 +263,9 @@ public class ObjectDetectionService {
                         float[] newBox = new float[]{x1, y1, x2, y2};
                         boolean esCajaDuplicada = false;
                         for (ObjectDetectionResult resultDet : results) {
-                            float existingX1 = (float) (resultDet.getX() - resultDet.getWeight() / 2);
+                            float existingX1 = (float) (resultDet.getX() - resultDet.getWidth() / 2);
                             float existingY1 = (float) (resultDet.getY() - resultDet.getHeight() / 2);
-                            float existingX2 = (float) (resultDet.getX() + resultDet.getWeight() / 2);
+                            float existingX2 = (float) (resultDet.getX() + resultDet.getWidth() / 2);
                             float existingY2 = (float) (resultDet.getY() + resultDet.getHeight() / 2);
                             float[] existingBox = new float[]{existingX1, existingY1, existingX2, existingY2};
 
@@ -271,6 +286,13 @@ public class ObjectDetectionService {
                             graphics.setColor(Color.BLUE);  // Cambia a color azul para vehículos
                             graphics.setStroke(new java.awt.BasicStroke(3));
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+                            String label = String.format("%s: %.2f", "Vehicle", confidence);
+
+                            // Dibujar el texto sobre la imagen, justo encima de la caja
+                            Font font = new Font("Arial", Font.PLAIN, 16);
+                            graphics.setFont(font);
+                            graphics.drawString(label, (int) x1, (int) y1 - 5); // Posiciona el texto ligeramente por encima de la caja
+
                             graphics.dispose();
                         }
                     }
@@ -353,9 +375,9 @@ public class ObjectDetectionService {
                         float[] newBox = new float[]{x1, y1, x2, y2};
                         boolean esCajaDuplicada = false;
                         for (ObjectDetectionResult resultDet : results) {
-                            float existingX1 = (float) (resultDet.getX() - resultDet.getWeight() / 2);
+                            float existingX1 = (float) (resultDet.getX() - resultDet.getWidth() / 2);
                             float existingY1 = (float) (resultDet.getY() - resultDet.getHeight() / 2);
-                            float existingX2 = (float) (resultDet.getX() + resultDet.getWeight() / 2);
+                            float existingX2 = (float) (resultDet.getX() + resultDet.getWidth() / 2);
                             float existingY2 = (float) (resultDet.getY() + resultDet.getHeight() / 2);
                             float[] existingBox = new float[]{existingX1, existingY1, existingX2, existingY2};
 
@@ -375,6 +397,13 @@ public class ObjectDetectionService {
                             graphics.setColor(Color.CYAN);
                             graphics.setStroke(new java.awt.BasicStroke(3));
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+                            String label = String.format("%s: %.2f", "Pala", confidence);
+
+                            // Dibujar el texto sobre la imagen, justo encima de la caja
+                            Font font = new Font("Arial", Font.PLAIN, 16);
+                            graphics.setFont(font);
+                            graphics.drawString(label, (int) x1, (int) y1 - 5); // Posiciona el texto ligeramente por encima de la caja
+
                             graphics.dispose();
                         }
                     }
@@ -458,9 +487,9 @@ public class ObjectDetectionService {
                         float[] newBox = new float[]{x1, y1, x2, y2};
                         boolean esCajaDuplicada = false;
                         for (ObjectDetectionResult resultDet : results) {
-                            float existingX1 = (float) (resultDet.getX() - resultDet.getWeight() / 2);
+                            float existingX1 = (float) (resultDet.getX() - resultDet.getWidth() / 2);
                             float existingY1 = (float) (resultDet.getY() - resultDet.getHeight() / 2);
-                            float existingX2 = (float) (resultDet.getX() + resultDet.getWeight() / 2);
+                            float existingX2 = (float) (resultDet.getX() + resultDet.getWidth() / 2);
                             float existingY2 = (float) (resultDet.getY() + resultDet.getHeight() / 2);
                             float[] existingBox = new float[]{existingX1, existingY1, existingX2, existingY2};
 
@@ -483,6 +512,13 @@ public class ObjectDetectionService {
                             graphics.setColor(Color.BLUE);
                             graphics.setStroke(new java.awt.BasicStroke(3));
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+                            String label = String.format("%s: %.2f", "Pala", confidence);
+
+                            // Dibujar el texto sobre la imagen, justo encima de la caja
+                            Font font = new Font("Arial", Font.PLAIN, 16);
+                            graphics.setFont(font);
+                            graphics.drawString(label, (int) x1, (int) y1 - 5); // Posiciona el texto ligeramente por encima de la caja
+
                             graphics.dispose();
                         }
                     }
@@ -564,9 +600,9 @@ public class ObjectDetectionService {
                         float[] newBox = new float[]{x1, y1, x2, y2};
                         boolean esCajaDuplicada = false;
                         for (ObjectDetectionResult resultDet : results) {
-                            float existingX1 = (float) (resultDet.getX() - resultDet.getWeight() / 2);
+                            float existingX1 = (float) (resultDet.getX() - resultDet.getWidth() / 2);
                             float existingY1 = (float) (resultDet.getY() - resultDet.getHeight() / 2);
-                            float existingX2 = (float) (resultDet.getX() + resultDet.getWeight() / 2);
+                            float existingX2 = (float) (resultDet.getX() + resultDet.getWidth() / 2);
                             float existingY2 = (float) (resultDet.getY() + resultDet.getHeight() / 2);
                             float[] existingBox = new float[]{existingX1, existingY1, existingX2, existingY2};
 
@@ -589,6 +625,13 @@ public class ObjectDetectionService {
                             graphics.setColor(Color.yellow);
                             graphics.setStroke(new java.awt.BasicStroke(3));
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+                            String label = String.format("%s: %.2f", "Camion", confidence);
+
+                            // Dibujar el texto sobre la imagen, justo encima de la caja
+                            Font font = new Font("Arial", Font.PLAIN, 16);
+                            graphics.setFont(font);
+                            graphics.drawString(label, (int) x1, (int) y1 - 5); // Posiciona el texto ligeramente por encima de la caja
+
                             graphics.dispose();
                         }
                     }
@@ -671,9 +714,9 @@ public class ObjectDetectionService {
                         float[] newBox = new float[]{x1, y1, x2, y2};
                         boolean esCajaDuplicada = false;
                         for (ObjectDetectionResult resultDet : results) {
-                            float existingX1 = (float) (resultDet.getX() - resultDet.getWeight() / 2);
+                            float existingX1 = (float) (resultDet.getX() - resultDet.getWidth() / 2);
                             float existingY1 = (float) (resultDet.getY() - resultDet.getHeight() / 2);
-                            float existingX2 = (float) (resultDet.getX() + resultDet.getWeight() / 2);
+                            float existingX2 = (float) (resultDet.getX() + resultDet.getWidth() / 2);
                             float existingY2 = (float) (resultDet.getY() + resultDet.getHeight() / 2);
                             float[] existingBox = new float[]{existingX1, existingY1, existingX2, existingY2};
 
@@ -695,7 +738,18 @@ public class ObjectDetectionService {
                             Graphics2D graphics = image.createGraphics();
                             graphics.setColor(Color.yellow);
                             graphics.setStroke(new java.awt.BasicStroke(3));
+
+                            // Dibujar el rectángulo (caja delimitadora)
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+
+                            // Crear el texto con la clase y la confianza (redondeada a dos decimales)
+                            String label = String.format("%s: %.2f", "Tubo", confidence);
+
+                            // Dibujar el texto sobre la imagen, justo encima de la caja
+                            Font font = new Font("Arial", Font.PLAIN, 16);
+                            graphics.setFont(font);
+                            graphics.drawString(label, (int) x1, (int) y1 - 5); // Posiciona el texto ligeramente por encima de la caja
+
                             graphics.dispose();
                         }
                     }
@@ -724,7 +778,7 @@ public class ObjectDetectionService {
         // Retornar los resultados
         return results;
     }
-    public List<ObjectDetectionResult> performPersonaDetection(MultipartFile imageFile, Long proyectoId) {
+    public List<ObjectDetectionResult> performEstacionDetection (MultipartFile imageFile, Long proyectoId) {
         List<ObjectDetectionResult> results = new ArrayList<>();
         float iouThreshold = 0.5f;  // Umbral para considerar que dos cajas representan el mismo objeto
 
@@ -779,9 +833,9 @@ public class ObjectDetectionService {
                         boolean esCajaDuplicada = false;
                         for (ObjectDetectionResult resultDet : results) {
                             float[] existingBox = new float[]{
-                                    (float) (resultDet.getX() - resultDet.getWeight() / 2),
+                                    (float) (resultDet.getX() - resultDet.getWidth() / 2),
                                     (float) (resultDet.getY() - resultDet.getHeight() / 2),
-                                    (float) (resultDet.getX() + resultDet.getWeight() / 2),
+                                    (float) (resultDet.getX() + resultDet.getWidth() / 2),
                                     (float) (resultDet.getY() + resultDet.getHeight() / 2)
                             };
 
@@ -859,7 +913,7 @@ public class ObjectDetectionService {
         List<ObjectDetectionResult> combinedResults = new ArrayList<>();
         Optional<Proyecto> p=proyectoRepository.findById(proyectId);
         this.minConfig=p.get().getMinConf();
-
+        Usuario usuario=p.get().getUsuario();
         System.out.println("Comienzo analisis Vehiculos");
         // Realizar la detección de vehículos
         List<ObjectDetectionResult> vehicleDetections = performVehicleDetection(image,proyectId);
@@ -881,16 +935,64 @@ public class ObjectDetectionService {
         System.out.println("Comienzo analisis tubos");
         List<ObjectDetectionResult> tubosDetections = performTuboDetection(image,proyectId);
         combinedResults.addAll(tubosDetections);
-        System.out.println("Comienzo analisis personas");
-        List<ObjectDetectionResult> pesonasDetect = performPersonaDetection(image,proyectId);
-        combinedResults.addAll(pesonasDetect);
+        System.out.println("Comienzo analisis estaciones");
+        //List<ObjectDetectionResult> estaciones = performEstacionDetection(image,proyectId);
+        //combinedResults.addAll(estaciones);
+        checkRestricciones(proyectId,combinedResults);
         ObjetoImagen obj=new ObjetoImagen();
         obj.setObjetos(combinedResults);
         obj.setImage(encodeImageToBase64(this.imagen));
         this.imagen=null;
-        // Devolver la lista combinada de todas las detecciones
-        return obj;
+        if(combinedResults.size()>0) {
+            StringBuilder cuerpoCorreo = new StringBuilder();
+            cuerpoCorreo.append("Se han encontrado las siguientes detecciones en el análisis de imagen:\n\n");
+
+            for (ObjectDetectionResult resultado : combinedResults) {
+                cuerpoCorreo.append("Objeto detectado: ").append(resultado.getLabel()).append("\n");
+                cuerpoCorreo.append("Confianza: ").append(resultado.getConfidence()).append("\n");
+                cuerpoCorreo.append("Coordenadas: (")
+                        .append("X: ").append(resultado.getX()).append(", ")
+                        .append("Y: ").append(resultado.getY()).append(", ")
+                        .append("Ancho: ").append(resultado.getWidth()).append(", ")
+                        .append("Alto: ").append(resultado.getHeight()).append(")\n\n");
+            }
+            LocalDate localDate=LocalDate.now();
+            java.sql.Date fechaActual=Date.valueOf(localDate);
+            emailService.enviarCorreo(usuario.getEmail(), "Estado detecciones dia: " + fechaActual, cuerpoCorreo.toString());
+            // Devolver la lista combinada de todas las detecciones
+        }return obj;
     }
+
+    private void checkRestricciones (Long proyectId, List<ObjectDetectionResult> combinedResults) {
+        List<Restriccion> restricciones = restriccionRepository.findRestrictionsByProjectDaily(proyectId);
+        LocalDate localDate = LocalDate.now();
+        java.sql.Date fechaActual = Date.valueOf(localDate);
+        restricciones.forEach(restriccion -> {
+            System.out.println(restriccion);
+            // Solo evaluamos las restricciones que están dentro del rango de fechas
+            if ((restriccion.getFechaHasta().before(fechaActual) || restriccion.getFechaHasta().equals(fechaActual)) && restriccion.getCumplida()==null && restriccion.getDiaria()) {
+                List<ObjectDetectionResult> deteccionesFiltradas = combinedResults.stream()
+                        .filter(deteccion ->
+                                (deteccion.getLabel().replace(" ", "").toLowerCase().equals(restriccion.getObjeto().replace(" ", "").toLowerCase()))
+                        ).collect(Collectors.toList());
+                int cantidadDetecciones = deteccionesFiltradas.size();
+
+                // Verificamos si se cumple la cantidad mínima y máxima de detecciones
+                if (cantidadDetecciones > restriccion.getCantidadMax() || cantidadDetecciones < restriccion.getCantidadMin()) {
+                    Fallo nuevoFallo = Fallo.builder()
+                            .restriccion(restriccion)  // Asociamos la restricción que falló
+                            .datos("La restricción no se cumplió: Objeto esperado: " + restriccion.getObjeto() +", se esperaban entre "+restriccion.getCantidadMin()+" y "+
+                                    restriccion.getCantidadMax()+" de apariciones el dia de hoy y son: " + cantidadDetecciones)
+                            .fecha(fechaActual)
+                            .build();
+
+                    // Guardamos el fallo en la base de datos
+                    fallosRepository.save(nuevoFallo);
+                }
+            }
+        });
+    }
+
     public static String encodeImageToBase64(BufferedImage image) {
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

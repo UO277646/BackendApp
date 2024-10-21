@@ -26,6 +26,7 @@ public class RestriccionApiDto {
     private int cantidadMin;
     private int cantidadMax;
     private Boolean cumplida;
+    private Boolean diaria;
 
     @Override
     public String toString () {

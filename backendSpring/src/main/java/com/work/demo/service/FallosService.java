@@ -28,6 +28,7 @@ public class FallosService {
                 .falloId(fallo.getFalloId())
                 .restriccionId(fallo.getRestriccion().getIdRestriccion())
                 .datos(fallo.getDatos())
+                .fecha(fallo.getFecha())
                 .build();
     }
 

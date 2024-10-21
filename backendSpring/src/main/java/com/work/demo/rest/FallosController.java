@@ -6,10 +6,7 @@ import com.work.demo.service.FallosService;
 import com.work.demo.service.dto.FallosServiceDto;
 import com.work.demo.service.dto.ProyectoServiceDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +22,11 @@ public class FallosController {
         return fallosServiceDtos.stream()
                 .map(this::convertirApiDto)
                 .collect(Collectors.toList());
+    }
+    @DeleteMapping("/delete/{falloId}")
+    public boolean deleteFallo(@PathVariable Long falloId){
+        fallosService.eliminarFallo(falloId);
+        return true;
     }
 
     private FallosApiDto convertirApiDto (FallosServiceDto fallosServiceDto) {

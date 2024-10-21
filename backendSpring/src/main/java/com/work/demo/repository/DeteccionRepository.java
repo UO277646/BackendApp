@@ -23,4 +23,5 @@ public interface DeteccionRepository extends JpaRepository<Deteccion,Long> {
     List<Deteccion> findByProyectoIdAndFotoId (Long proyecto, Date dia);
     @Query("SELECT d FROM Deteccion d WHERE d.proyecto.idProyecto = :proyectoId")
     List<Deteccion> findDetectionsByProject (Long proyectoId);
+
 }
