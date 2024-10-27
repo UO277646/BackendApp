@@ -18,6 +18,14 @@ import java.sql.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@NamedQuery(
+        name = "Proyecto.findAllNotDeleted",
+        query = "SELECT p FROM Proyecto p WHERE p.borrado = false"
+)
+@SqlResultSetMapping(
+        name = "ProyectoMapping",
+        entities = @EntityResult(entityClass = Proyecto.class)
+)
 public class Proyecto {
 
     @Id
@@ -34,4 +42,6 @@ public class Proyecto {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false) // Mapeo explícito a proyecto_id
     private Usuario usuario;
+    @Column(name="borrado")
+    private boolean borrado;
 }

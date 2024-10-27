@@ -17,4 +17,14 @@ public class ProyectoServiceDto {
     private double minConf;
     private String user;
 
+    @Override
+    public String toString () {
+        return "ProyectoServiceDto{" +
+                "idProyecto=" + idProyecto +
+                ", nombre='" + nombre + '\'' +
+                ", fechaCreacion=" + fechaCreacion +
+                ", minConf=" + minConf +
+                ", user='" + user + '\'' +
+                '}';
+    }
 }

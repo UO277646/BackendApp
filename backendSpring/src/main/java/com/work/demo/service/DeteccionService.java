@@ -167,4 +167,8 @@ public class DeteccionService {
                 .map(this::convertirADeteccionDto)
                 .collect(Collectors.toList());
     }
+
+    public int findLastId () {
+        return deteccionRepository.findLastId();
+    }
 }

@@ -4,7 +4,6 @@ import com.work.demo.repository.*;
 import com.work.demo.service.dto.FotoServiceDto;
 import com.work.demo.service.dto.ProyectoServiceDto;
 import com.work.demo.service.dto.RestriccionServiceDto;
-import com.work.demo.service.dto.UsuarioServiceDto;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,6 +34,7 @@ public class ProyectoService {
         dto.setIdProyecto(proyecto.getIdProyecto());
         dto.setNombre(proyecto.getNombre());
         dto.setFechaCreacion(proyecto.getFechaCreacion());
+        dto.setMinConf(proyecto.getMinConf());
         return dto;
     }
 
@@ -94,6 +94,7 @@ public class ProyectoService {
             nuevoProyecto.setMinConf(proyectoDto.getMinConf());
             nuevoProyecto.setNombre(proyectoDto.getNombre());
             nuevoProyecto.setFechaCreacion(Date.valueOf(LocalDate.now()));
+            nuevoProyecto.setBorrado(false);
             Proyecto proyectoGuardado = proyectoRepository.save(nuevoProyecto);
             return convertirAProyectoDto(proyectoGuardado);
         } catch (Exception e) {
@@ -108,6 +109,7 @@ public class ProyectoService {
                     .orElseThrow(() -> new RuntimeException("Proyecto no encontrado con ID: " + id_proyecto));
 
             proyectoExistente.setNombre(proyectoActualizadoDto.getNombre());
+            proyectoExistente.setMinConf(proyectoActualizadoDto.getMinConf());
             proyectoExistente.setFechaCreacion(proyectoActualizadoDto.getFechaCreacion());
             Proyecto proyectoActualizado = proyectoRepository.save(proyectoExistente);
             return convertirAProyectoDto(proyectoActualizado);
@@ -120,7 +122,9 @@ public class ProyectoService {
     public void eliminarProyecto(Long id_proyecto) {
         try {
             if (proyectoRepository.existsById(id_proyecto)) {
-                proyectoRepository.deleteById(id_proyecto);
+                Proyecto proyectoExistente = proyectoRepository.findById(id_proyecto).orElseThrow(() -> new RuntimeException("Proyecto no encontrado con ID: " + id_proyecto));
+                proyectoExistente.setBorrado(true);
+                proyectoRepository.save(proyectoExistente);
             } else {
                 throw new RuntimeException("No se puede eliminar, proyecto no encontrado con ID: " + id_proyecto);
             }
@@ -217,7 +221,7 @@ public class ProyectoService {
     public List<ProyectoServiceDto> findByEmail (String email,String nombre) {
         try{
             Long usuarioId=usuarioService.findOrCreateUser(email,nombre);
-            List<Proyecto> proyectos = proyectoRepository.findByUsuarioUserId(usuarioId);
+            List<Proyecto> proyectos = proyectoRepository.findByUsuarioUserIdAndBorradoFalse(usuarioId);
             return proyectos.stream()
                     .map(this::convertirAProyectoDto) // Convierte cada entidad en un DTO
                     .collect(Collectors.toList());

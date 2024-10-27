@@ -39,6 +39,7 @@ public class RestriccionApiDto {
                 ", cantidadMin=" + cantidadMin +
                 ", cantidadMax=" + cantidadMax +
                 ", cumplida=" + cumplida +
+                "diaria="+diaria+
                 '}';
     }
 }

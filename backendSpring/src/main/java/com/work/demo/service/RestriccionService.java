@@ -72,6 +72,8 @@ public class RestriccionService {
             nuevaRestriccion.setCantidadMin(restriccionDto.getCantidadMin());
             nuevaRestriccion.setCantidadMax(restriccionDto.getCantidadMax());
             nuevaRestriccion.setCumplida(null);
+            nuevaRestriccion.setBorrado(false);
+            nuevaRestriccion.setDiaria(restriccionDto.getDiaria());
             Restriccion restriccionGuardada = restriccionRepository.save(nuevaRestriccion);
             return convertirARestriccionDto(restriccionGuardada);
         } catch (Exception e) {
@@ -92,6 +94,7 @@ public class RestriccionService {
             restriccionExistente.setCantidadMin(restriccionActualizadaDto.getCantidadMin());
             restriccionExistente.setCantidadMax(restriccionActualizadaDto.getCantidadMax());
             restriccionExistente.setCumplida(restriccionActualizadaDto.getCumplida());
+            restriccionExistente.setDiaria(restriccionActualizadaDto.getDiaria());
             Restriccion restriccionActualizada = restriccionRepository.save(restriccionExistente);
             return convertirARestriccionDto(restriccionActualizada);
         } catch (Exception e) {
@@ -103,7 +106,10 @@ public class RestriccionService {
     public void eliminarRestriccion(Long idRestriccion) {
         try {
             if (restriccionRepository.existsById(idRestriccion)) {
-                restriccionRepository.deleteById(idRestriccion);
+                Restriccion restriccionExistente = restriccionRepository.findById(idRestriccion)
+                        .orElseThrow(() -> new RuntimeException("Restricción no encontrada con ID: " + idRestriccion));
+                restriccionExistente.setBorrado(true);
+                restriccionRepository.save(restriccionExistente);
             } else {
                 throw new RuntimeException("No se puede eliminar, restricción no encontrada con ID: " + idRestriccion);
             }

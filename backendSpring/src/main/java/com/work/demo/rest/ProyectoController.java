@@ -22,6 +22,7 @@ public class ProyectoController {
     @GetMapping("/find/proyectos/{email}/{nombre}")
     public List<ProyectoApiDto> getProyectosByEmail(@PathVariable String email,@PathVariable String nombre) {
         List<ProyectoServiceDto> proyectos = proyectoService.findByEmail(email,nombre);
+        System.out.println(proyectos);
         return proyectos.stream()
                 .map(this::convertirAProyectoApiDto)
                 .collect(Collectors.toList());

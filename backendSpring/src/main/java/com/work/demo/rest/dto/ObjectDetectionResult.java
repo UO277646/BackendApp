@@ -10,9 +10,10 @@ import lombok.*;
 public class ObjectDetectionResult {
     private double x;
     private double y;
-    private double width;
+    private double weight;
     private double height;
 
     private double confidence;
     private String label;
+    private int idDeteccion;
 }

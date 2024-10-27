@@ -50,4 +50,6 @@ public class Restriccion {
     private Boolean cumplida;
     @Column(name = "diaria")
     private Boolean diaria;
+    @Column(name="borrado")
+    private boolean borrado;
 }
