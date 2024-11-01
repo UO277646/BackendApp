@@ -303,12 +303,13 @@ public class ObjectDetectionService {
                             graphics.setColor(Color.BLUE);  // Cambia a color azul para vehículos
                             graphics.setStroke(new java.awt.BasicStroke(3));
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
-                            String label = String.format("%d.-%s: %.2f",this.idDeteccion, "Vehiculo", confidence);
-
-                            // Dibujar el texto sobre la imagen, justo encima de la caja
+                            String label = String.format("%d.-%s: %.2f", this.idDeteccion, "Vehiculo", confidence);
                             Font font = new Font("Arial", Font.BOLD, 16);
                             graphics.setFont(font);
-                            graphics.drawString(label, (int) x1, (int) y1 - 5); // Posiciona el texto ligeramente por encima de la caja
+                            FontMetrics metrics = graphics.getFontMetrics(font);
+                            int textX = (int) x1 + 5;  // Un pequeño margen de la izquierda de la caja
+                            int textY = (int) y1 + (int) (y2 - y1) - 5;  // Un pequeño margen desde la parte inferior de la caja
+                            graphics.drawString(label, textX, textY);
 
                             graphics.dispose();
                         }
@@ -415,13 +416,19 @@ public class ObjectDetectionService {
                             graphics.setColor(Color.CYAN);
                             graphics.setStroke(new java.awt.BasicStroke(3));
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
-                            String label = String.format("%d.-%s: %.2f",this.idDeteccion, "Pala", confidence);
+                            String label = String.format("%d.-%s: %.2f", this.idDeteccion, "Pala", confidence);
 
-                            // Dibujar el texto sobre la imagen, justo encima de la caja
+// Configura el texto y la fuente
                             Font font = new Font("Arial", Font.BOLD, 16);
                             graphics.setFont(font);
-                            graphics.drawString(label, (int) x1+5, (int) y1 + 20); // Posiciona el texto ligeramente por encima de la caja
+                            FontMetrics metrics = graphics.getFontMetrics(font);
 
+// Calcula la posición para que el texto esté en la esquina inferior izquierda de la caja
+                            int textX = (int) x1 + 5;  // Margen de 5 píxeles desde el borde izquierdo de la caja
+                            int textY = (int) y1 + (int) (y2 - y1) - 5;  // Margen de 5 píxeles desde el borde inferior de la caja
+
+// Dibuja el texto en la esquina inferior izquierda de la caja
+                            graphics.drawString(label, textX, textY);
                             graphics.dispose();
                         }
                     }
@@ -641,15 +648,19 @@ public class ObjectDetectionService {
                             results.add(detectionResult);
                             // Dibujar la detección en la imagen
                             Graphics2D graphics = image.createGraphics();
-                            graphics.setColor(Color.yellow);
+                            graphics.setColor(Color.YELLOW);
                             graphics.setStroke(new java.awt.BasicStroke(3));
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
-                            String label = String.format("%d.-%s: %.2f",this.idDeteccion, "Camion", this.maxConfidence(confidence,confidence2));
+                            String label = String.format("%d.-%s: %.2f", this.idDeteccion, "Camion", this.maxConfidence(confidence, confidence2));
 
-                            // Dibujar el texto sobre la imagen, justo encima de la caja
                             Font font = new Font("Arial", Font.BOLD, 16);
                             graphics.setFont(font);
-                            graphics.drawString(label, (int) x1, (int) y1 - 5); // Posiciona el texto ligeramente por encima de la caja
+                            FontMetrics metrics = graphics.getFontMetrics(font);
+
+                            int textX = (int) x1 + 5;  // Margen de 5 píxeles desde el borde izquierdo de la caja
+                            int textY = (int) y1 + (int) (y2 - y1) - 5;  // Margen de 5 píxeles desde el borde inferior de la caja
+
+                            graphics.drawString(label, textX, textY);
 
                             graphics.dispose();
                         }
@@ -1045,13 +1056,16 @@ public class ObjectDetectionService {
                             graphics.setColor(Color.CYAN);
                             graphics.setStroke(new java.awt.BasicStroke(3));
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
-                            String label = String.format("%d.-%s: %.2f",this.idDeteccion, classLabel, maxConfidence);
+                            String label = String.format("%d.-%s: %.2f", this.idDeteccion, classLabel, maxConfidence);
 
-                            // Dibujar el texto sobre la imagen, justo encima de la caja
                             Font font = new Font("Arial", Font.BOLD, 16);
                             graphics.setFont(font);
-                            graphics.drawString(label, (int) x1+5, (int) y1 + 20); // Posiciona el texto ligeramente por encima de la caja
+                            FontMetrics metrics = graphics.getFontMetrics(font);
 
+                            int textX = (int) x1 + 5;  // Margen de 5 píxeles desde el borde izquierdo de la caja
+                            int textY = (int) y1 + (int) (y2 - y1) - 5;  // Margen de 5 píxeles desde el borde inferior de la caja
+
+                            graphics.drawString(label, textX, textY);
                             graphics.dispose();
                         }
                     }
@@ -1080,7 +1094,7 @@ public class ObjectDetectionService {
         // Retornar los resultados
         return results;
     }
-    private List<ObjectDetectionResult> performPersonaDetection (MultipartFile imagen, Long proyectId) {
+    public List<ObjectDetectionResult> performPersonaDetection (MultipartFile imagen, Long proyectId) {
         List<ObjectDetectionResult> results = new ArrayList<>();
         float iouThreshold = 0.5f;  // Umbral para considerar que dos cajas representan el mismo objeto
 
@@ -1215,7 +1229,7 @@ public class ObjectDetectionService {
         // Retornar los resultados
         return results;
     }
-    private List<ObjectDetectionResult> performMontacargaDetection (MultipartFile imagen, Long proyectId) {
+    public List<ObjectDetectionResult> performMontacargaDetection (MultipartFile imagen, Long proyectId) {
         List<ObjectDetectionResult> results = new ArrayList<>();
         float iouThreshold = 0.5f;  // Umbral para considerar que dos cajas representan el mismo objeto
 
@@ -1316,7 +1330,7 @@ public class ObjectDetectionService {
                             graphics.fillRect((int) x1, (int) y1 - textHeight, textWidth, textHeight);
 
                             // Establecer color de la letra (blanco)
-                            graphics.setColor(Color.WHITE);
+                            graphics.setColor(Color.BLACK);
 
                             // Dibujar el texto encima del fondo amarillo
                             graphics.drawString(label, (int) x1, (int) y1 - 5);
