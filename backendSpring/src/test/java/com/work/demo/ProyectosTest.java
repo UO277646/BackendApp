@@ -1,5 +1,6 @@
 package com.work.demo;
 
+import com.work.demo.exceptions.InvalidParameterException;
 import com.work.demo.repository.*;
 import com.work.demo.service.ProyectoService;
 import com.work.demo.service.UsuarioService;
@@ -102,6 +103,48 @@ public class ProyectosTest {
         assertEquals(proyecto.getNombre(), result.getNombre());
         verify(proyectoRepository, times(1)).save(any(Proyecto.class));
     }
+    @Test
+    void testCrearProyectoNombreNull() {
+        // Configura el proyectoDto con nombre null
+        proyectoDto.setNombre(null);
+//        when(usuarioService.findByEmail(any())).thenReturn(usuario);
+
+        // Verifica que se lanza RuntimeException cuando el nombre es null
+        assertThrows(InvalidParameterException.class, () -> {
+            proyectoService.crearProyecto(proyectoDto);
+        });
+
+        // Verifica que no se llama al método save del repositorio, porque el proyecto es inválido
+        verify(proyectoRepository, never()).save(any(Proyecto.class));
+    }
+    @Test
+    void testCrearProyectoConfianzaNegative() {
+        // Configura el proyectoDto con nombre null
+        proyectoDto.setMinConf(-1);
+//        when(usuarioService.findByEmail(any())).thenReturn(usuario);
+
+        // Verifica que se lanza RuntimeException cuando el nombre es null
+        assertThrows(InvalidParameterException.class, () -> {
+            proyectoService.crearProyecto(proyectoDto);
+        });
+
+        // Verifica que no se llama al método save del repositorio, porque el proyecto es inválido
+        verify(proyectoRepository, never()).save(any(Proyecto.class));
+    }
+    @Test
+    void testCrearProyectoConfianzaMayorUno() {
+        // Configura el proyectoDto con nombre null
+        proyectoDto.setMinConf(2);
+//        when(usuarioService.findByEmail(any())).thenReturn(usuario);
+
+        // Verifica que se lanza RuntimeException cuando el nombre es null
+        assertThrows(InvalidParameterException.class, () -> {
+            proyectoService.crearProyecto(proyectoDto);
+        });
+
+        // Verifica que no se llama al método save del repositorio, porque el proyecto es inválido
+        verify(proyectoRepository, never()).save(any(Proyecto.class));
+    }
 
     @Test
     void testActualizarProyecto() {
@@ -115,7 +158,62 @@ public class ProyectosTest {
         verify(proyectoRepository, times(1)).findById(1L);
         verify(proyectoRepository, times(1)).save(any(Proyecto.class));
     }
+    @Test
+    void testActualizarProyectoConfianzaMayorUno() {
+        // Configura el proyectoDto con nombre null
+        proyectoDto.setMinConf(2);
+//        when(usuarioService.findByEmail(any())).thenReturn(usuario);
 
+        // Verifica que se lanza RuntimeException cuando el nombre es null
+        assertThrows(InvalidParameterException.class, () -> {
+            proyectoService.actualizarProyecto(1L,proyectoDto);
+        });
+
+        // Verifica que no se llama al método save del repositorio, porque el proyecto es inválido
+        verify(proyectoRepository, never()).save(any(Proyecto.class));
+    }
+    @Test
+    void testActualizarProyectoConfianzaMenorCero() {
+        // Configura el proyectoDto con nombre null
+        proyectoDto.setMinConf(-1);
+//        when(usuarioService.findByEmail(any())).thenReturn(usuario);
+
+        // Verifica que se lanza RuntimeException cuando el nombre es null
+        assertThrows(InvalidParameterException.class, () -> {
+            proyectoService.actualizarProyecto(1L,proyectoDto);
+        });
+
+        // Verifica que no se llama al método save del repositorio, porque el proyecto es inválido
+        verify(proyectoRepository, never()).save(any(Proyecto.class));
+    }
+    @Test
+    void testActualizarProyectoNombreNull() {
+        // Configura el proyectoDto con nombre null
+        proyectoDto.setNombre(null);
+//        when(usuarioService.findByEmail(any())).thenReturn(usuario);
+
+        // Verifica que se lanza RuntimeException cuando el nombre es null
+        assertThrows(InvalidParameterException.class, () -> {
+            proyectoService.actualizarProyecto(1L,proyectoDto);
+        });
+
+        // Verifica que no se llama al método save del repositorio, porque el proyecto es inválido
+        verify(proyectoRepository, never()).save(any(Proyecto.class));
+    }
+    @Test
+    void testActualizarProyectoIdNull() {
+        // Configura el proyectoDto con nombre null
+        proyectoDto.setNombre(null);
+//        when(usuarioService.findByEmail(any())).thenReturn(usuario);
+
+        // Verifica que se lanza RuntimeException cuando el nombre es null
+        assertThrows(InvalidParameterException.class, () -> {
+            proyectoService.actualizarProyecto(null,proyectoDto);
+        });
+
+
+
+    }
     @Test
     void testEliminarProyecto() {
         when(proyectoRepository.existsById(1L)).thenReturn(true);
@@ -127,7 +225,18 @@ public class ProyectosTest {
         verify(proyectoRepository, times(1)).findById(1L);
         verify(proyectoRepository, times(1)).save(any(Proyecto.class));
     }
+    @Test
+    void testEliminarProyectoNulo() {
+        when(proyectoRepository.existsById(1L)).thenReturn(true);
+        when(proyectoRepository.findById(1L)).thenReturn(Optional.of(proyecto));
 
+        assertThrows(InvalidParameterException.class, () -> {
+            proyectoService.eliminarProyecto(null);
+        });
+
+        // Verifica que no se llama al método save del repositorio, porque el proyecto es inválido
+        verify(proyectoRepository, never()).save(any(Proyecto.class));
+    }
     @Test
     void testFindRestrict() {
         Restriccion restriccion = new Restriccion();
@@ -165,7 +274,12 @@ public class ProyectosTest {
         assertEquals(1, result.size());
         verify(proyectoRepository, times(1)).findByUsuarioUserIdAndBorradoFalse(anyLong());
     }
-
+    @Test
+    void testFindByEmailNull() {
+        assertThrows(InvalidParameterException.class, () -> {
+            List<ProyectoServiceDto> result = proyectoService.findByEmail(null, "User Name");
+        });
+    }
     @Test
     void testCheckProject() {
         when(usuarioService.findByEmail(anyString())).thenReturn(usuario);
@@ -175,5 +289,29 @@ public class ProyectosTest {
 
         assertTrue(result);
         verify(proyectoRepository, times(1)).findById(anyLong());
+    }
+    @Test
+    void testCheckProjectWrongUser() {
+
+        assertThrows(InvalidParameterException.class, () -> {
+            proyectoService.checkProject(1L, "em@example.com");
+        });
+
+    }
+    @Test
+    void testCheckProjectNullUser() {
+
+        assertThrows(InvalidParameterException.class, () -> {
+            proyectoService.checkProject(1L, null);
+        });
+
+    }
+    @Test
+    void testCheckProjectEmptyUser() {
+
+        assertThrows(InvalidParameterException.class, () -> {
+            proyectoService.checkProject(1L, "");
+        });
+
     }
 }

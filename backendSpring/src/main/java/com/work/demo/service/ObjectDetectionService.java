@@ -615,7 +615,7 @@ public class ObjectDetectionService {
                     float confidence2= outputData[i][5][j];
 
                     // Filtrar por confianza
-                    if (confidence >= this.minConfig || confidence2 >= this.minConfig) {
+                    if (confidence >= this.minConfig) {
                         // Convertir de coordenadas centrales a esquinas
                         float x1 = cx - width / 2;
                         float y1 = cy - height / 2;
@@ -1387,8 +1387,8 @@ public class ObjectDetectionService {
         combinedResults.addAll(vehicleDetections);
         System.out.println("Comienzo analisis palas");
         // Realizar la detección de grúas
-        List<ObjectDetectionResult> gruasDetections = performPalaDetection(image,proyectId);
-        combinedResults.addAll(gruasDetections);
+        List<ObjectDetectionResult> palasDetections = performPalaDetection(image,proyectId);
+        combinedResults.addAll(palasDetections);
         System.out.println("Comienzo analisis pallets");
         // Realizar la detección de palets
         List<ObjectDetectionResult> palletDetections = performPalletDetection(image,proyectId);
@@ -1462,7 +1462,7 @@ public class ObjectDetectionService {
                     Fallo nuevoFallo = Fallo.builder()
                             .restriccion(restriccion)  // Asociamos la restricción que falló
                             .datos("La restricción no se cumplió: Objeto esperado: " + restriccion.getObjeto() +", se esperaban entre "+restriccion.getCantidadMin()+" y "+
-                                    restriccion.getCantidadMax()+" de apariciones el dia de "+fechaActual+" y son: " + cantidadDetecciones)
+                                    restriccion.getCantidadMax()+" apariciones el dia de "+fechaActual+" y son: " + cantidadDetecciones)
                             .fecha(fechaActual)
                             .build();
                     restriccion.setCumplida(false);

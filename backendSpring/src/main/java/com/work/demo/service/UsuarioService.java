@@ -1,5 +1,6 @@
 package com.work.demo.service;
 
+import com.work.demo.exceptions.InvalidParameterException;
 import com.work.demo.repository.UsuarioRepository;
 import com.work.demo.repository.Usuario;
 import com.work.demo.service.dto.UsuarioServiceDto;
@@ -33,7 +34,7 @@ public class UsuarioService {
                     .map(this::convertirAUsuarioDto)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener la lista de usuarios", e);
+            throw new InvalidParameterException("Error al obtener la lista de usuarios", e);
         }
     }
 
@@ -44,7 +45,7 @@ public class UsuarioService {
             return usuario.map(this::convertirAUsuarioDto)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + userId));
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener el usuario con ID: " + userId, e);
+            throw new InvalidParameterException("Error al obtener el usuario con ID: " + userId, e);
         }
     }
 
@@ -58,7 +59,7 @@ public class UsuarioService {
             Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
             return convertirAUsuarioDto(usuarioGuardado);
         } catch (Exception e) {
-            throw new RuntimeException("Error al crear el usuario", e);
+            throw new InvalidParameterException("Error al crear el usuario", e);
         }
     }
 
@@ -74,7 +75,7 @@ public class UsuarioService {
             Usuario usuarioActualizado = usuarioRepository.save(usuarioExistente);
             return convertirAUsuarioDto(usuarioActualizado);
         } catch (Exception e) {
-            throw new RuntimeException("Error al actualizar el usuario con ID: " + userId, e);
+            throw new InvalidParameterException("Error al actualizar el usuario con ID: " + userId, e);
         }
     }
 
@@ -84,10 +85,10 @@ public class UsuarioService {
             if (usuarioRepository.existsById(userId)) {
                 usuarioRepository.deleteById(userId);
             } else {
-                throw new RuntimeException("No se puede eliminar, usuario no encontrado con ID: " + userId);
+                throw new InvalidParameterException("No se puede eliminar, usuario no encontrado con ID: " + userId);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Error al eliminar el usuario con ID: " + userId, e);
+            throw new InvalidParameterException("Error al eliminar el usuario con ID: " + userId, e);
         }
     }
 

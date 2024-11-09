@@ -84,25 +84,23 @@
 			<artifactId>jjwt</artifactId>
 			<version>0.12.6</version>
 		</dependency>
-		<!-- Tomcat para el despliegue en un servidor externo
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-mail</artifactId>
-			<version>3.3.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-mail</artifactId>
-		</dependency>
-		-->
-		<!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
+
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 			<version>5.14.0</version>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+			<version>6.20.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20230227</version>
+		</dependency>
 	</dependencies>
 
 	<build>

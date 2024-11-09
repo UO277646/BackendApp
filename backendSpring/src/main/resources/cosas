@@ -97,7 +97,7 @@ public List<ObjectDetectionResult> performConeDetection (MultipartFile imageFile
         } catch (OrtException | IOException e) {
             e.printStackTrace();
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new InvalidParameterException(e);
         }
 
         // Envolver los resultados en un contenedor

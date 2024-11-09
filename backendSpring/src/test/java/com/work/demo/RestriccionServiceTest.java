@@ -1,4 +1,5 @@
 package com.work.demo;
+import com.work.demo.exceptions.InvalidParameterException;
 import com.work.demo.repository.*;
 import com.work.demo.service.ProyectoService;
 import com.work.demo.service.RestriccionService;
@@ -94,7 +95,19 @@ class RestriccionServiceTest {
         assertEquals(restriccion.getIdRestriccion(), result.getIdRestriccion());
         verify(restriccionRepository, times(1)).findById(1L);
     }
+    @Test
+    void obtenerRestriccionNull() {
+        // Given
+        when(restriccionRepository.findById(1L)).thenReturn(Optional.of(restriccion));
 
+        // When
+        assertThrows(InvalidParameterException.class, () -> {
+            restriccionService.obtenerRestriccionPorId(null);
+        });
+
+        // Verifica que no se llama al método save del repositorio, porque el proyecto es inválido
+
+    }
     @Test
     void crearRestriccion_ReturnsCreatedRestriccion() {
         // Given
@@ -109,9 +122,44 @@ class RestriccionServiceTest {
         assertEquals(restriccion.getIdRestriccion(), result.getIdRestriccion());
         verify(restriccionRepository, times(1)).save(any(Restriccion.class));
     }
+    @Test
+    void crearRestriccionNullDto() {
+        // Given
+        RestriccionServiceDto restriccionDto = null;
+
+        // When & Then
+        assertThrows(InvalidParameterException.class, () ->
+                        restriccionService.crearRestriccion(restriccionDto),
+                "Debería lanzar InvalidParameterException cuando restriccionDto es null");
+    }
 
     @Test
-    void actualizarRestriccion_ReturnsUpdatedRestriccion() {
+    void crearRestriccionCantidadMinNegativa() {
+        // Given
+        RestriccionServiceDto restriccionDto = new RestriccionServiceDto();
+        restriccionDto.setCantidadMin(-1); // Valor negativo
+        restriccionDto.setCantidadMax(10);
+
+        // When & Then
+        assertThrows(InvalidParameterException.class, () ->
+                        restriccionService.crearRestriccion(restriccionDto),
+                "Debería lanzar InvalidParameterException cuando cantidadMin es negativo");
+    }
+
+    @Test
+    void crearRestriccionCantidadMaxMenorQueCantidadMin() {
+        // Given
+        RestriccionServiceDto restriccionDto = new RestriccionServiceDto();
+        restriccionDto.setCantidadMin(5);
+        restriccionDto.setCantidadMax(3); // cantidadMax menor que cantidadMin
+
+        // When & Then
+        assertThrows(InvalidParameterException.class, () ->
+                        restriccionService.crearRestriccion(restriccionDto),
+                "Debería lanzar InvalidParameterException cuando cantidadMax es menor que cantidadMin");
+    }
+    @Test
+    void actualizarRestriccionReturnsUpdatedRestriccion() {
         // Given
         when(restriccionRepository.findById(1L)).thenReturn(Optional.of(restriccion));
         when(restriccionRepository.save(any(Restriccion.class))).thenReturn(restriccion);
@@ -126,7 +174,7 @@ class RestriccionServiceTest {
     }
 
     @Test
-    void eliminarRestriccion_SetsBorradoToTrue() {
+    void eliminarRestriccionSetsBorradoToTrue() {
         // Given
         when(restriccionRepository.findById(1L)).thenReturn(Optional.of(restriccion));
         when(restriccionRepository.existsById(1L)).thenReturn(true);
@@ -137,5 +185,41 @@ class RestriccionServiceTest {
         // Then
         assertTrue(restriccion.isBorrado());
         verify(restriccionRepository, times(1)).save(any(Restriccion.class));
+    }
+    @Test
+    void actualizarRestriccionNullDto() {
+        // Given
+        RestriccionServiceDto restriccionActualizadaDto = null;
+
+        // When & Then
+        assertThrows(InvalidParameterException.class, () ->
+                        restriccionService.actualizarRestriccion(1L, restriccionActualizadaDto),
+                "Debería lanzar InvalidParameterException cuando restriccionActualizadaDto es null");
+    }
+
+    @Test
+    void actualizarRestriccionCantidadMinNegativa() {
+        // Given
+        RestriccionServiceDto restriccionActualizadaDto = new RestriccionServiceDto();
+        restriccionActualizadaDto.setCantidadMin(-1); // Valor negativo
+        restriccionActualizadaDto.setCantidadMax(10);
+
+        // When & Then
+        assertThrows(InvalidParameterException.class, () ->
+                        restriccionService.actualizarRestriccion(1L, restriccionActualizadaDto),
+                "Debería lanzar InvalidParameterException cuando cantidadMin es negativo");
+    }
+
+    @Test
+    void actualizarRestriccionCantidadMaxMenorQueCantidadMin() {
+        // Given
+        RestriccionServiceDto restriccionActualizadaDto = new RestriccionServiceDto();
+        restriccionActualizadaDto.setCantidadMin(5);
+        restriccionActualizadaDto.setCantidadMax(3); // cantidadMax menor que cantidadMin
+
+        // When & Then
+        assertThrows(InvalidParameterException.class, () ->
+                        restriccionService.actualizarRestriccion(1L, restriccionActualizadaDto),
+                "Debería lanzar InvalidParameterException cuando cantidadMax es menor que cantidadMin");
     }
 }
