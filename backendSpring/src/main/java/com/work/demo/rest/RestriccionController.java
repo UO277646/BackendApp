@@ -59,6 +59,7 @@ public class RestriccionController {
                 .fechaHasta(restriccionDto.getFechaHasta())
                 .cantidadMin(restriccionDto.getCantidadMin())
                 .cantidadMax(restriccionDto.getCantidadMax())
+                .diaria(restriccionDto.getDiaria())
                 .build();
     }
 
@@ -71,6 +72,7 @@ public class RestriccionController {
                 .cantidadMin(restriccionApiDto.getCantidadMin())
                 .cantidadMax(restriccionApiDto.getCantidadMax())
                 .proyectoId(restriccionApiDto.getProyectoId())
+                .diaria(restriccionApiDto.getDiaria())
                 .build();
     }
 }

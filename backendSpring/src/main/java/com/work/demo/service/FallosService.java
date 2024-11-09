@@ -1,5 +1,6 @@
 package com.work.demo.service;
 
+import com.work.demo.exceptions.InvalidParameterException;
 import com.work.demo.repository.Fallo;
 import com.work.demo.repository.FallosRepository;
 
@@ -28,6 +29,7 @@ public class FallosService {
                 .falloId(fallo.getFalloId())
                 .restriccionId(fallo.getRestriccion().getIdRestriccion())
                 .datos(fallo.getDatos())
+                .fecha(fallo.getFecha())
                 .build();
     }
 
@@ -39,7 +41,7 @@ public class FallosService {
                     .map(this::convertirAFallosDto) // Convierte cada entidad en un DTO
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener la lista de fallos", e);
+            throw new InvalidParameterException("Error al obtener la lista de fallos", e);
         }
     }
 
@@ -50,7 +52,7 @@ public class FallosService {
             return fallo.map(this::convertirAFallosDto)
                     .orElseThrow(() -> new RuntimeException("Fallo no encontrado con ID: " + falloId));
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener el fallo con ID: " + falloId, e);
+            throw new InvalidParameterException("Error al obtener el fallo con ID: " + falloId, e);
         }
     }
 
@@ -66,7 +68,7 @@ public class FallosService {
             Fallo falloGuardado = fallosRepository.save(nuevoFallo);
             return convertirAFallosDto(falloGuardado);
         } catch (Exception e) {
-            throw new RuntimeException("Error al crear el fallo", e);
+            throw new InvalidParameterException("Error al crear el fallo", e);
         }
     }
 
@@ -83,7 +85,7 @@ public class FallosService {
             Fallo falloActualizado = fallosRepository.save(falloExistente);
             return convertirAFallosDto(falloActualizado);
         } catch (Exception e) {
-            throw new RuntimeException("Error al actualizar el fallo con ID: " + falloId, e);
+            throw new InvalidParameterException("Error al actualizar el fallo con ID: " + falloId, e);
         }
     }
 
@@ -93,16 +95,16 @@ public class FallosService {
             if (fallosRepository.existsById(falloId)) {
                 fallosRepository.deleteById(falloId);
             } else {
-                throw new RuntimeException("No se puede eliminar, fallo no encontrado con ID: " + falloId);
+                throw new InvalidParameterException("No se puede eliminar, fallo no encontrado con ID: " + falloId);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Error al eliminar el fallo con ID: " + falloId, e);
+            throw new InvalidParameterException("Error al eliminar el fallo con ID: " + falloId, e);
         }
     }
 
     public List<FallosServiceDto> obtenerTodosFallosRes (Long idRec) {
         if(idRec==null){
-            throw new RuntimeException("Error al obtener la lista de fallos");
+            throw new InvalidParameterException("Error al obtener la lista de fallos");
         }
         try {
             List<Fallo> fallos = fallosRepository.findByRestriccion(idRec);
@@ -110,7 +112,7 @@ public class FallosService {
                     .map(this::convertirAFallosDto) // Convierte cada entidad en un DTO
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener la lista de fallos", e);
+            throw new InvalidParameterException("Error al obtener la lista de fallos", e);
         }
     }
 }

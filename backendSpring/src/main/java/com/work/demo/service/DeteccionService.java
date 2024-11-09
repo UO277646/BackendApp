@@ -1,5 +1,6 @@
 package com.work.demo.service;
 
+import com.work.demo.exceptions.InvalidParameterException;
 import com.work.demo.repository.Deteccion;
 import com.work.demo.repository.DeteccionRepository;
 import com.work.demo.repository.Proyecto;
@@ -44,7 +45,7 @@ public class DeteccionService {
                     .map(this::convertirADeteccionDto)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener la lista de detecciones", e);
+            throw new InvalidParameterException("Error al obtener la lista de detecciones", e);
         }
     }
 
@@ -56,7 +57,7 @@ public class DeteccionService {
                     .map(this::convertirADeteccionDto)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener todas las detecciones", e);
+            throw new InvalidParameterException("Error al obtener todas las detecciones", e);
         }
     }
 
@@ -67,7 +68,7 @@ public class DeteccionService {
             return deteccion.map(this::convertirADeteccionDto)
                     .orElseThrow(() -> new RuntimeException("Detección no encontrada con ID: " + deteccionId));
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener la detección con ID: " + deteccionId, e);
+            throw new InvalidParameterException("Error al obtener la detección con ID: " + deteccionId, e);
         }
     }
 
@@ -89,7 +90,7 @@ public class DeteccionService {
             Deteccion deteccionGuardada = deteccionRepository.save(nuevaDeteccion);
             return convertirADeteccionDto(deteccionGuardada);
         } catch (Exception e) {
-            throw new RuntimeException("Error al crear la detección", e);
+            throw new InvalidParameterException("Error al crear la detección", e);
         }
     }
 
@@ -112,7 +113,7 @@ public class DeteccionService {
             Deteccion deteccionActualizada = deteccionRepository.save(deteccionExistente);
             return convertirADeteccionDto(deteccionActualizada);
         } catch (Exception e) {
-            throw new RuntimeException("Error al actualizar la detección con ID: " + deteccionId, e);
+            throw new InvalidParameterException("Error al actualizar la detección con ID: " + deteccionId, e);
         }
     }
 
@@ -122,10 +123,10 @@ public class DeteccionService {
             if (deteccionRepository.existsById(deteccionId)) {
                 deteccionRepository.deleteById(deteccionId);
             } else {
-                throw new RuntimeException("No se puede eliminar, detección no encontrada con ID: " + deteccionId);
+                throw new InvalidParameterException("No se puede eliminar, detección no encontrada con ID: " + deteccionId);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Error al eliminar la detección con ID: " + deteccionId, e);
+            throw new InvalidParameterException("Error al eliminar la detección con ID: " + deteccionId, e);
         }
     }
 
@@ -144,21 +145,21 @@ public class DeteccionService {
                 return fotoDate.equals(today);
             });
         } catch (Exception e) {
-            throw new RuntimeException("Error al comprobar las detecciones de hoy", e);
+            throw new InvalidParameterException("Error al comprobar las detecciones de hoy", e);
         }
     }
 
     public List<DeteccionServiceDto> findByFotoId (Date fotoId) {
         // Llama al repositorio para buscar las detecciones por fotoId
         if(fotoId==null){
-            throw new RuntimeException("Foto null");
+            throw new InvalidParameterException("Foto null");
         }
         return deteccionRepository.findByFotoId(fotoId);
     }
 
     public List<DeteccionServiceDto> findByProyectoAndDia (Long proyecto, Date dia) {
         if(proyecto==null || dia==null){
-            throw new RuntimeException("Proyecto o dia vacio");
+            throw new InvalidParameterException("Proyecto o dia vacio");
         }
         List<Deteccion> detecciones = deteccionRepository.findByProyectoIdAndFotoId(proyecto, dia);
 
@@ -166,5 +167,9 @@ public class DeteccionService {
         return detecciones.stream()
                 .map(this::convertirADeteccionDto)
                 .collect(Collectors.toList());
+    }
+
+    public int findLastId () {
+        return deteccionRepository.findLastId();
     }
 }

@@ -15,4 +15,5 @@ public class ObjectDetectionResult {
 
     private double confidence;
     private String label;
+    private int idDeteccion;
 }

@@ -22,6 +22,7 @@ public class ProyectoController {
     @GetMapping("/find/proyectos/{email}/{nombre}")
     public List<ProyectoApiDto> getProyectosByEmail(@PathVariable String email,@PathVariable String nombre) {
         List<ProyectoServiceDto> proyectos = proyectoService.findByEmail(email,nombre);
+        System.out.println(proyectos);
         return proyectos.stream()
                 .map(this::convertirAProyectoApiDto)
                 .collect(Collectors.toList());
@@ -42,7 +43,7 @@ public class ProyectoController {
                 .map(restriccion -> new RestriccionApiDto(restriccion.getIdRestriccion(),id,
                         restriccion.getObjeto(),
                         restriccion.getFechaDesde(),
-                        restriccion.getFechaHasta(),restriccion.getCantidadMin(),restriccion.getCantidadMax(),restriccion.getCumplida()))
+                        restriccion.getFechaHasta(),restriccion.getCantidadMin(),restriccion.getCantidadMax(),restriccion.getCumplida(),restriccion.getDiaria()))
                 .collect(Collectors.toList());
     }
 

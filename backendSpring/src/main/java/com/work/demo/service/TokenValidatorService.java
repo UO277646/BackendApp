@@ -6,6 +6,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.work.demo.exceptions.InvalidParameterException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,7 @@ public class TokenValidatorService {
 
             return jwt;  // Devolver el JWT al frontend
         } else {
-            throw new RuntimeException("Invalid ID token");
+            throw new InvalidParameterException("Invalid ID token");
         }
     }
 }

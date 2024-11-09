@@ -1,5 +1,6 @@
 package com.work.demo.service;
 
+import com.work.demo.exceptions.InvalidParameterException;
 import com.work.demo.repository.Proyecto;
 import com.work.demo.repository.Restriccion;
 import com.work.demo.repository.RestriccionRepository;
@@ -42,7 +43,7 @@ public class RestriccionService {
                     .map(this::convertirARestriccionDto)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener la lista de restricciones", e);
+            throw new InvalidParameterException("Error al obtener la lista de restricciones", e);
         }
     }
 
@@ -53,14 +54,14 @@ public class RestriccionService {
             return restriccion.map(this::convertirARestriccionDto)
                     .orElseThrow(() -> new RuntimeException("Restricción no encontrada con ID: " + idRestriccion));
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener la restricción con ID: " + idRestriccion, e);
+            throw new InvalidParameterException("Error al obtener la restricción con ID: " + idRestriccion, e);
         }
     }
     @Transactional
     // Método para crear una nueva restricción
     public RestriccionServiceDto crearRestriccion(RestriccionServiceDto restriccionDto) {
         if(restriccionDto==null || restriccionDto.getCantidadMin()<0 || restriccionDto.getCantidadMax() < restriccionDto.getCantidadMin()){
-            throw new RuntimeException("Error al crear el proyecto");
+            throw new InvalidParameterException("Error al crear el proyecto");
         }
         try {
             Restriccion nuevaRestriccion = new Restriccion();
@@ -72,16 +73,21 @@ public class RestriccionService {
             nuevaRestriccion.setCantidadMin(restriccionDto.getCantidadMin());
             nuevaRestriccion.setCantidadMax(restriccionDto.getCantidadMax());
             nuevaRestriccion.setCumplida(null);
+            nuevaRestriccion.setBorrado(false);
+            nuevaRestriccion.setDiaria(restriccionDto.getDiaria());
             Restriccion restriccionGuardada = restriccionRepository.save(nuevaRestriccion);
             return convertirARestriccionDto(restriccionGuardada);
         } catch (Exception e) {
-            throw new RuntimeException("Error al crear la restricción", e);
+            throw new InvalidParameterException("Error al crear la restricción", e);
         }
     }
 
     // Método para actualizar una restricción existente
     public RestriccionServiceDto actualizarRestriccion(Long idRestriccion, RestriccionServiceDto restriccionActualizadaDto) {
         try {
+            if(restriccionActualizadaDto==null || restriccionActualizadaDto.getCantidadMin()<0 || restriccionActualizadaDto.getCantidadMax() < restriccionActualizadaDto.getCantidadMin()){
+                throw new InvalidParameterException("Error al crear el proyecto");
+            }
             Restriccion restriccionExistente = restriccionRepository.findById(idRestriccion)
                     .orElseThrow(() -> new RuntimeException("Restricción no encontrada con ID: " + idRestriccion));
 
@@ -92,10 +98,11 @@ public class RestriccionService {
             restriccionExistente.setCantidadMin(restriccionActualizadaDto.getCantidadMin());
             restriccionExistente.setCantidadMax(restriccionActualizadaDto.getCantidadMax());
             restriccionExistente.setCumplida(restriccionActualizadaDto.getCumplida());
+            restriccionExistente.setDiaria(restriccionActualizadaDto.getDiaria());
             Restriccion restriccionActualizada = restriccionRepository.save(restriccionExistente);
             return convertirARestriccionDto(restriccionActualizada);
         } catch (Exception e) {
-            throw new RuntimeException("Error al actualizar la restricción con ID: " + idRestriccion, e);
+            throw new InvalidParameterException("Error al actualizar la restricción con ID: " + idRestriccion, e);
         }
     }
 
@@ -103,12 +110,15 @@ public class RestriccionService {
     public void eliminarRestriccion(Long idRestriccion) {
         try {
             if (restriccionRepository.existsById(idRestriccion)) {
-                restriccionRepository.deleteById(idRestriccion);
+                Restriccion restriccionExistente = restriccionRepository.findById(idRestriccion)
+                        .orElseThrow(() -> new RuntimeException("Restricción no encontrada con ID: " + idRestriccion));
+                restriccionExistente.setBorrado(true);
+                restriccionRepository.save(restriccionExistente);
             } else {
-                throw new RuntimeException("No se puede eliminar, restricción no encontrada con ID: " + idRestriccion);
+                throw new InvalidParameterException("No se puede eliminar, restricción no encontrada con ID: " + idRestriccion);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Error al eliminar la restricción con ID: " + idRestriccion, e);
+            throw new InvalidParameterException("Error al eliminar la restricción con ID: " + idRestriccion, e);
         }
     }
 }

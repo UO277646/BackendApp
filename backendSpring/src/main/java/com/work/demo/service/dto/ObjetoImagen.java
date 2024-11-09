@@ -14,4 +14,5 @@ import java.util.List;
 public class ObjetoImagen {
     private List<ObjectDetectionResult> objetos;
     private String image;
+    private String fallos;
 }

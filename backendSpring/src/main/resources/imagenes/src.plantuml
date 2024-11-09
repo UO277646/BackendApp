@@ -1,0 +1,850 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class AnalisisReturnDto {
+  - image: byte[]
+  - detecciones: List<ObjectDetectionResult>
+  + getDetecciones(): List<ObjectDetectionResult>
+  + getImage(): byte[]
+  + setDetecciones(List<ObjectDetectionResult>): void
+  + setImage(byte[]): void
+  + builder(): AnalisisReturnDtoBuilder
+}
+class AuthController {
+  - tokenValidatorService: TokenValidatorService
+  - proyectoService: ProyectoService
+  + verifyToken(TokenRequestDto): TokenRequestDto
+  + getProyectosByEmail(Long, String): Boolean
+}
+class BackForWorkApplication {
+  + corsConfigurer(): WebMvcConfigurer
+  + main(String[]): void
+}
+class BackForWorkApplicationTests {
+  ~ contextLoads(): void
+}
+class Deteccion {
+  - height: double
+  - proyecto: Proyecto
+  - x: double
+  - fotoId: Date
+  - objeto: String
+  - confidence: double
+  - y: double
+  - weight: double
+  - deteccionId: Long
+  + getDeteccionId(): Long
+  + setDeteccionId(Long): void
+  + setObjeto(String): void
+  + setHeight(double): void
+  + getConfidence(): double
+  + builder(): DeteccionBuilder
+  + setFotoId(Date): void
+  + setConfidence(double): void
+  + getProyecto(): Proyecto
+  + getFotoId(): Date
+  + getObjeto(): String
+  + getX(): double
+  + getY(): double
+  + setY(double): void
+  + getWeight(): double
+  + setProyecto(Proyecto): void
+  + getHeight(): double
+  + setX(double): void
+  + setWeight(double): void
+}
+class DeteccionApiDto {
+  - objeto: String
+  - y: double
+  - deteccionId: Long
+  - x: double
+  - fotoId: Date
+  - proyectoId: Long
+  - confidence: double
+  - weight: double
+  - height: double
+  + getObjeto(): String
+  + getDeteccionId(): Long
+  + getConfidence(): double
+  + setObjeto(String): void
+  + setHeight(double): void
+  + builder(): DeteccionApiDtoBuilder
+  + getProyectoId(): Long
+  + setFotoId(Date): void
+  + setWeight(double): void
+  + setConfidence(double): void
+  + setY(double): void
+  + getFotoId(): Date
+  + getX(): double
+  + getY(): double
+  + setDeteccionId(Long): void
+  + setX(double): void
+  + setProyectoId(Long): void
+  + getWeight(): double
+  + getHeight(): double
+}
+class DeteccionController {
+  - deteccionService: DeteccionService
+  + updateDeteccion(Long, DeteccionApiDto): DeteccionApiDto
+  + deleteDeteccion(Long): void
+  - convertirADeteccionApiDto(DeteccionServiceDto): DeteccionApiDto
+  + getDeteccionesByProyectoAndDia(Long, Date): List<DeteccionApiDto>
+  + getDeteccionById(Long): DeteccionApiDto
+  - convertirADeteccionServiceDto(DeteccionApiDto): DeteccionServiceDto
+  + getAllDetecciones(): List<DeteccionApiDto>
+  + createDeteccion(DeteccionApiDto): DeteccionApiDto
+  + getDetectionsByFotoId(Date): List<DeteccionApiDto>
+}
+interface DeteccionRepository << interface >> {
+  + findLastId(): int
+  + findByProyectoIdAndFotoId(Long, Date): List<Deteccion>
+  + findByFotoId(Date): List<DeteccionServiceDto>
+  + findDetectionsByProject(Long): List<Deteccion>
+  + findDetectionsByProjectGroupedByDate(Long): List<FotoServiceDto>
+}
+class DeteccionService {
+  - proyectoService: ProyectoService
+  - deteccionRepository: DeteccionRepository
+  + obtenerTodasDetecciones(): List<DeteccionServiceDto>
+  + obtenerDeteccionPorId(Long): DeteccionServiceDto
+  + findByProyectoAndDia(Long, Date): List<DeteccionServiceDto>
+  + crearDeteccion(DeteccionServiceDto): DeteccionServiceDto
+  - convertirADeteccionDto(Deteccion): DeteccionServiceDto
+  + findAll(): List<DeteccionServiceDto>
+  + findByFotoId(Date): List<DeteccionServiceDto>
+  + checkToday(): boolean
+  + actualizarDeteccion(Long, DeteccionServiceDto): DeteccionServiceDto
+  + eliminarDeteccion(Long): void
+  + findLastId(): int
+}
+class DeteccionServiceDto {
+  - objeto: String
+  - confidence: double
+  - proyectoId: Long
+  - x: double
+  - height: double
+  - deteccionId: Long
+  - y: double
+  - fotoId: Date
+  - weight: double
+  + getFotoId(): Date
+  + setY(double): void
+  + getDeteccionId(): Long
+  + setFotoId(Date): void
+  + getProyectoId(): Long
+  + getObjeto(): String
+  + setX(double): void
+  + builder(): DeteccionServiceDtoBuilder
+  + getX(): double
+  + setDeteccionId(Long): void
+  + setConfidence(double): void
+  + setProyectoId(Long): void
+  + setWeight(double): void
+  + getY(): double
+  + getWeight(): double
+  + getConfidence(): double
+  + getHeight(): double
+  + setObjeto(String): void
+  + setHeight(double): void
+}
+class DeteccionServiceTest {
+  - proyectoService: ProyectoService
+  - deteccion: Deteccion
+  - deteccionRepository: DeteccionRepository
+  - proyecto: Proyecto
+  - deteccionService: DeteccionService
+  - deteccionDto: DeteccionServiceDto
+  ~ testEliminarDeteccion(): void
+  ~ testCrearDeteccion(): void
+  ~ setUp(): void
+  ~ testObtenerDeteccionPorId(): void
+  ~ testObtenerTodasDetecciones(): void
+  ~ testActualizarDeteccion(): void
+}
+class Fallo {
+  - datos: String
+  - fecha: Date
+  - restriccion: Restriccion
+  - falloId: Long
+  + getRestriccion(): Restriccion
+  + getFalloId(): Long
+  + getDatos(): String
+  + getFecha(): Date
+  + setFalloId(Long): void
+  + setRestriccion(Restriccion): void
+  + setDatos(String): void
+  + setFecha(Date): void
+  + builder(): FalloBuilder
+}
+class FallosApiDto {
+  - falloId: Long
+  - datos: String
+  - restriccionId: Long
+  - fecha: Date
+  + getFalloId(): Long
+  + getRestriccionId(): Long
+  + getDatos(): String
+  + getFecha(): Date
+  + setFalloId(Long): void
+  + setRestriccionId(Long): void
+  + setDatos(String): void
+  + setFecha(Date): void
+  + builder(): FallosApiDtoBuilder
+}
+class FallosController {
+  - fallosService: FallosService
+  + getProyectosByEmail(Long): List<FallosApiDto>
+  + deleteFallo(Long): boolean
+  - convertirApiDto(FallosServiceDto): FallosApiDto
+}
+class FallosControllerIntegrationTest {
+  - mockMvc: MockMvc
+  - fallosService: FallosService
+  + testDeleteFallo(): void
+  ~ setUp(): void
+  + testGetFallosByRestriccion(): void
+}
+interface FallosRepository << interface >> {
+  + findByRestriccion(Long): List<Fallo>
+}
+class FallosService {
+  - fallosRepository: FallosRepository
+  - restriccionRepository: RestriccionRepository
+  + obtenerFalloPorId(Long): FallosServiceDto
+  + eliminarFallo(Long): void
+  - convertirAFallosDto(Fallo): FallosServiceDto
+  + actualizarFallo(Long, FallosServiceDto): FallosServiceDto
+  + crearFallo(FallosServiceDto): FallosServiceDto
+  + obtenerTodosFallos(): List<FallosServiceDto>
+  + obtenerTodosFallosRes(Long): List<FallosServiceDto>
+}
+class FallosServiceDto {
+  - fecha: Date
+  - datos: String
+  - falloId: Long
+  - restriccionId: Long
+  + getDatos(): String
+  + getFalloId(): Long
+  + getRestriccionId(): Long
+  + getFecha(): Date
+  + setFalloId(Long): void
+  + setRestriccionId(Long): void
+  + setDatos(String): void
+  + setFecha(Date): void
+  + builder(): FallosServiceDtoBuilder
+}
+class FotoApiDto {
+  - cantidad: long
+  - fechaCreacion: Date
+  + equals(Object): boolean
+  # canEqual(Object): boolean
+  + hashCode(): int
+  + toString(): String
+  + getFechaCreacion(): Date
+  + getCantidad(): long
+  + setFechaCreacion(Date): void
+  + setCantidad(long): void
+}
+class FotoServiceDto {
+  - cantidad: long
+  - fechaCreacion: Date
+  + equals(Object): boolean
+  # canEqual(Object): boolean
+  + hashCode(): int
+  + toString(): String
+  + getFechaCreacion(): Date
+  + getCantidad(): long
+  + setFechaCreacion(Date): void
+  + setCantidad(long): void
+}
+class ImageUtils {
+  + convertMultipartFileToBufferedImage(MultipartFile): BufferedImage
+  + convertImageTo4DFloatArray(BufferedImage): float[][][][]
+  + convertImageToFloatArray(BufferedImage): float[]
+  + convertImageTo3DFloatArray(BufferedImage): float[][][]
+}
+class InvalidParameterException
+class ObjectDetectionContainer {
+  - objects: List<ObjectDetectionResult>
+  - quantity: int
+  + equals(Object): boolean
+  # canEqual(Object): boolean
+  + hashCode(): int
+  + toString(): String
+  + getObjects(): List<ObjectDetectionResult>
+  + getQuantity(): int
+  + setObjects(List<ObjectDetectionResult>): void
+  + setQuantity(int): void
+  + addObjectDetectionResult(ObjectDetectionResult): void
+}
+class ObjectDetectionController {
+  - obj: ObjectDetectionService
+  - deteccionService: DeteccionService
+  + detectObjects(): List<ObjectPruebaDto>
+  + getDetectionImage(MultipartFile, Long): AnalisisReturnDto
+  - performObjectDetection(MultipartFile, Long): ObjetoImagen
+  + detectObjects(MultipartFile, Long): ObjetoImagen
+}
+class ObjectDetectionControllerIntegrationTest {
+  - mockMvc: MockMvc
+  - objectDetectionService: ObjectDetectionService
+  - deteccionService: DeteccionService
+  ~ setUp(): void
+  + testDetectObjectsEndpoint(): void
+}
+class ObjectDetectionResult {
+  - y: double
+  - height: double
+  - idDeteccion: int
+  - weight: double
+  - x: double
+  - confidence: double
+  - label: String
+  + equals(Object): boolean
+  # canEqual(Object): boolean
+  + setX(double): void
+  + setHeight(double): void
+  + setConfidence(double): void
+  + setIdDeteccion(int): void
+  + getIdDeteccion(): int
+  + setLabel(String): void
+  + hashCode(): int
+  + toString(): String
+  + getX(): double
+  + setWeight(double): void
+  + getY(): double
+  + getLabel(): String
+  + getWeight(): double
+  + getConfidence(): double
+  + setY(double): void
+  + getHeight(): double
+}
+class ObjectDetectionService {
+  - fallosRepository: FallosRepository
+  - proyectoRepository: ProyectoRepository
+  - imagen: BufferedImage
+  - deteccionService: DeteccionService
+  - restriccionRepository: RestriccionRepository
+  - minConfig: double
+  - idDeteccion: int
+  + performVehicleDetection(MultipartFile, Long): List<ObjectDetectionResult>
+  + performPalletDetection(MultipartFile, Long): List<ObjectDetectionResult>
+  + performMontacargaDetection(MultipartFile, Long): List<ObjectDetectionResult>
+  - calcularIoU(float[], float[]): float
+  + performCamionDetection(MultipartFile, Long): List<ObjectDetectionResult>
+  - maxConfidence(float, float): float
+  + performConeDetection(MultipartFile, Long): List<ObjectDetectionResult>
+  + performTuboDetection(MultipartFile, Long): List<ObjectDetectionResult>
+  + performTaladroDeteccion(MultipartFile, Long): List<ObjectDetectionResult>
+  + performAllDetections(MultipartFile, Long): ObjetoImagen
+  + performPersonaDetection(MultipartFile, Long): List<ObjectDetectionResult>
+  + encodeImageToBase64(BufferedImage): String?
+  + performAllDetectionsAndReturnImage(MultipartFile, Long): AnalisisReturnDto
+  + performPalaDetection(MultipartFile, Long): List<ObjectDetectionResult>
+  - checkRestricciones(Long, List<ObjectDetectionResult>): String
+  + resizeImage(BufferedImage, int, int): BufferedImage
+  + performEstacionDetection(MultipartFile, Long): List<ObjectDetectionResult>
+}
+class ObjectDetectionServiceTest {
+  - mockCamionImageFile: MockMultipartFile
+  - deteccionService: DeteccionService
+  - mockMontacargasImageFile: MockMultipartFile
+  - mockObreroImageFile: MockMultipartFile
+  - mockConeImageFile: MockMultipartFile
+  - mockEstacionImageFile: MockMultipartFile
+  - mockPalletImageFile: MockMultipartFile
+  - detectionService: ObjectDetectionService
+  ~ testPerformPalletDetection(): void
+  - loadMockMultipartFile(String): MockMultipartFile
+  ~ testPerformConeDetection(): void
+  ~ testPerformObreroDetection(): void
+  ~ setUp(): void
+  ~ testPerformForkLiftDetection(): void
+  ~ testPerformEstacionDetection(): void
+  ~ testPerformVehicleDetection(): void
+}
+class ObjectPruebaDto {
+  ~ nombre: String
+  ~ apellido: String
+  + equals(Object): boolean
+  # canEqual(Object): boolean
+  + hashCode(): int
+  + toString(): String
+  + getNombre(): String
+  + getApellido(): String
+  + setNombre(String): void
+  + setApellido(String): void
+}
+class ObjetoImagen {
+  - objetos: List<ObjectDetectionResult>
+  - fallos: String
+  - image: String
+  + getObjetos(): List<ObjectDetectionResult>
+  + getImage(): String
+  + getFallos(): String
+  + setObjetos(List<ObjectDetectionResult>): void
+  + setImage(String): void
+  + setFallos(String): void
+  + builder(): ObjetoImagenBuilder
+}
+class Proyecto {
+  - fechaCreacion: Date
+  - borrado: boolean
+  - nombre: String
+  - usuario: Usuario
+  - idProyecto: Long
+  - minConf: double
+  + isBorrado(): boolean
+  + setUsuario(Usuario): void
+  + setBorrado(boolean): void
+  # canEqual(Object): boolean
+  + equals(Object): boolean
+  + getIdProyecto(): Long
+  + toString(): String
+  + setFechaCreacion(Date): void
+  + builder(): ProyectoBuilder
+  + setMinConf(double): void
+  + getNombre(): String
+  + getFechaCreacion(): Date
+  + getMinConf(): double
+  + hashCode(): int
+  + getUsuario(): Usuario
+  + setIdProyecto(Long): void
+  + setNombre(String): void
+}
+class ProyectoApiDto {
+  - user: String
+  - nombre: String
+  - minConf: double
+  - idProyecto: Long
+  - fechaCreacion: Date
+  + getFechaCreacion(): Date
+  + equals(Object): boolean
+  # canEqual(Object): boolean
+  + hashCode(): int
+  + toString(): String
+  + setMinConf(double): void
+  + setNombre(String): void
+  + setFechaCreacion(Date): void
+  + getIdProyecto(): Long
+  + setUser(String): void
+  + getNombre(): String
+  + getMinConf(): double
+  + getUser(): String
+  + setIdProyecto(Long): void
+}
+class ProyectoController {
+  - proyectoService: ProyectoService
+  + updateProyecto(Long, ProyectoApiDto): ProyectoApiDto
+  - convertirAProyectoServiceDto(ProyectoApiDto): ProyectoServiceDto
+  + deleteProyecto(Long): void
+  + getProyectoById(Long): ProyectoApiDto
+  + createProyecto(ProyectoApiDto): ProyectoApiDto
+  - convertirAProyectoApiDto(ProyectoServiceDto): ProyectoApiDto
+  + getProyectRestrictions(Long): List<RestriccionApiDto>
+  + getProyectosByEmail(String, String): List<ProyectoApiDto>
+  + getProyectDetections(Long): List<FotoApiDto>
+}
+class ProyectoControllerIntegrationTest {
+  - mockMvc: MockMvc
+  - objectMapper: ObjectMapper
+  + testGetProyectosByEmail(): void
+  + testGetProyectDetections(): void
+  + testGetProyectRestrictions(): void
+  + testCreateProyecto(): void
+  + testUpdateProyecto(): void
+  + testDeleteProyecto(): void
+}
+interface ProyectoRepository << interface >> {
+  + findByUsuarioUserIdAndBorradoFalse(Long): List<Proyecto>
+}
+class ProyectoService {
+  - usuarioService: UsuarioService
+  - deteccionRepository: DeteccionRepository
+  - fallosRepository: FallosRepository
+  - proyectoRepository: ProyectoRepository
+  - restriccionRepository: RestriccionRepository
+  + eliminarProyecto(Long): void
+  + findByEmail(String, String): List<ProyectoServiceDto>
+  + findAll(): List<ProyectoServiceDto>
+  + obtenerTodosProyectos(): List<ProyectoServiceDto>
+  + checkProject(Long, String): Boolean
+  - convertirAProyectoDto(Proyecto): ProyectoServiceDto
+  + findRestrict(Long): List<RestriccionServiceDto>
+  + obtenerProyectoPorId(Long): ProyectoServiceDto
+  + obtenerProyectoPorIdEntidad(Long): Proyecto
+  - convertirARestriccionDto(Restriccion): RestriccionServiceDto
+  + findDetect(Long): List<FotoServiceDto>
+  + crearProyecto(ProyectoServiceDto): ProyectoServiceDto
+  + actualizarProyecto(Long, ProyectoServiceDto): ProyectoServiceDto
+}
+class ProyectoServiceDto {
+  - nombre: String
+  - minConf: double
+  - fechaCreacion: Date
+  - idProyecto: Long
+  - user: String
+  + setNombre(String): void
+  # canEqual(Object): boolean
+  + equals(Object): boolean
+  + hashCode(): int
+  + getIdProyecto(): Long
+  + getNombre(): String
+  + setFechaCreacion(Date): void
+  + setUser(String): void
+  + getFechaCreacion(): Date
+  + getMinConf(): double
+  + getUser(): String
+  + setMinConf(double): void
+  + setIdProyecto(Long): void
+  + toString(): String
+}
+class ProyectosTest {
+  - usuarioService: UsuarioService
+  - proyectoDto: ProyectoServiceDto
+  - usuario: Usuario
+  - restriccionRepository: RestriccionRepository
+  - proyectoService: ProyectoService
+  - proyectoRepository: ProyectoRepository
+  - deteccionRepository: DeteccionRepository
+  - fallosRepository: FallosRepository
+  - proyecto: Proyecto
+  ~ testActualizarProyectoNombreNull(): void
+  ~ testCrearProyecto(): void
+  ~ testCrearProyectoConfianzaMayorUno(): void
+  ~ testActualizarProyectoConfianzaMenorCero(): void
+  ~ testFindByEmailNull(): void
+  ~ testFindRestrict(): void
+  ~ testActualizarProyectoIdNull(): void
+  ~ testCheckProjectEmptyUser(): void
+  ~ testActualizarProyecto(): void
+  ~ testActualizarProyectoConfianzaMayorUno(): void
+  ~ testEliminarProyecto(): void
+  ~ testCheckProjectWrongUser(): void
+  ~ testObtenerProyectoPorId(): void
+  ~ testEliminarProyectoNulo(): void
+  ~ testCrearProyectoNombreNull(): void
+  ~ testFindByEmail(): void
+  ~ setUp(): void
+  ~ testCheckProjectNullUser(): void
+  ~ testCrearProyectoConfianzaNegative(): void
+  ~ testObtenerTodosProyectos(): void
+  ~ testCheckProject(): void
+}
+class Restriccion {
+  - cumplida: Boolean
+  - diaria: Boolean
+  - idRestriccion: Long
+  - fechaHasta: Date
+  - objeto: String
+  - borrado: boolean
+  - proyecto: Proyecto
+  - cantidadMax: int
+  - fechaDesde: Date
+  - cantidadMin: int
+  + getProyecto(): Proyecto
+  + getIdRestriccion(): Long
+  + setCantidadMax(int): void
+  + builder(): RestriccionBuilder
+  + getObjeto(): String
+  + setFechaDesde(Date): void
+  + isBorrado(): boolean
+  + getFechaDesde(): Date
+  + setIdRestriccion(Long): void
+  + setProyecto(Proyecto): void
+  + getFechaHasta(): Date
+  + setBorrado(boolean): void
+  + getCantidadMin(): int
+  + getDiaria(): Boolean
+  + setDiaria(Boolean): void
+  + setCantidadMin(int): void
+  + setCumplida(Boolean): void
+  + setObjeto(String): void
+  + setFechaHasta(Date): void
+  + getCantidadMax(): int
+  + getCumplida(): Boolean
+  + toString(): String
+}
+class RestriccionApiDto {
+  - diaria: Boolean
+  - cumplida: Boolean
+  - cantidadMin: int
+  - cantidadMax: int
+  - objeto: String
+  - idRestriccion: Long
+  - fechaDesde: Date
+  - proyectoId: Long
+  - fechaHasta: Date
+  + setFechaHasta(Date): void
+  + builder(): RestriccionApiDtoBuilder
+  + setFechaDesde(Date): void
+  + setCantidadMax(int): void
+  + getIdRestriccion(): Long
+  + getProyectoId(): Long
+  + setObjeto(String): void
+  + getDiaria(): Boolean
+  + getObjeto(): String
+  + getFechaDesde(): Date
+  + setDiaria(Boolean): void
+  + setIdRestriccion(Long): void
+  + setProyectoId(Long): void
+  + getFechaHasta(): Date
+  + getCantidadMin(): int
+  + getCantidadMax(): int
+  + setCumplida(Boolean): void
+  + setCantidadMin(int): void
+  + getCumplida(): Boolean
+  + toString(): String
+}
+class RestriccionController {
+  - restriccionService: RestriccionService
+  + getRestriccionById(Long): RestriccionApiDto
+  + createRestriccion(RestriccionApiDto): RestriccionApiDto
+  + getAllRestricciones(): List<RestriccionApiDto>
+  + updateRestriccion(Long, RestriccionApiDto): RestriccionApiDto
+  + deleteRestriccion(Long): void
+  - convertirARestriccionApiDto(RestriccionServiceDto): RestriccionApiDto
+  - convertirARestriccionServiceDto(RestriccionApiDto): RestriccionServiceDto
+}
+class RestriccionControllerIntegrationTest {
+  - objectMapper: ObjectMapper
+  - mockMvc: MockMvc
+  + testGetRestriccionById(): void
+  + testCreateRestriccion(): void
+  + testDeleteRestriccion(): void
+  + testGetAllRestricciones(): void
+  + testUpdateRestriccion(): void
+}
+interface RestriccionRepository << interface >> {
+  + findRestrictionsByProjectEntity(Long): List<Restriccion>
+  + findRestrictionsByProject(Long): List<RestriccionServiceDto>
+  + findRestrictionsByProjectDaily(Long): List<Restriccion>
+}
+class RestriccionService {
+  - restriccionRepository: RestriccionRepository
+  - proyectoService: ProyectoService
+  - convertirARestriccionDto(Restriccion): RestriccionServiceDto
+  + actualizarRestriccion(Long, RestriccionServiceDto): RestriccionServiceDto
+  + eliminarRestriccion(Long): void
+  + findAll(): List<RestriccionServiceDto>
+  + obtenerRestriccionPorId(Long): RestriccionServiceDto
+  + crearRestriccion(RestriccionServiceDto): RestriccionServiceDto
+}
+class RestriccionServiceDto {
+  - fechaDesde: Date
+  - cantidadMin: int
+  - objeto: String
+  - diaria: Boolean
+  - fechaHasta: Date
+  - idRestriccion: Long
+  - cumplida: Boolean
+  - cantidadMax: int
+  - proyectoId: Long
+  + getIdRestriccion(): Long
+  + getProyectoId(): Long
+  + setCantidadMin(int): void
+  + getObjeto(): String
+  + builder(): RestriccionServiceDtoBuilder
+  + getFechaDesde(): Date
+  + getDiaria(): Boolean
+  + setCantidadMax(int): void
+  + getFechaHasta(): Date
+  + setIdRestriccion(Long): void
+  + setObjeto(String): void
+  + setFechaDesde(Date): void
+  + getCantidadMin(): int
+  + setProyectoId(Long): void
+  + getCantidadMax(): int
+  + setFechaHasta(Date): void
+  + getCumplida(): Boolean
+  + setCumplida(Boolean): void
+  + setDiaria(Boolean): void
+}
+class RestriccionServiceTest {
+  - proyectoService: ProyectoService
+  - restriccionService: RestriccionService
+  - proyecto: Proyecto
+  - restriccionRepository: RestriccionRepository
+  - restriccion: Restriccion
+  - restriccionDto: RestriccionServiceDto
+  ~ crearRestriccionCantidadMinNegativa(): void
+  ~ findAll_ReturnsRestricciones(): void
+  ~ obtenerRestriccionPorId_ReturnsRestriccion(): void
+  ~ eliminarRestriccionSetsBorradoToTrue(): void
+  ~ setUp(): void
+  ~ actualizarRestriccionReturnsUpdatedRestriccion(): void
+  ~ actualizarRestriccionNullDto(): void
+  ~ crearRestriccionNullDto(): void
+  ~ actualizarRestriccionCantidadMinNegativa(): void
+  ~ crearRestriccionCantidadMaxMenorQueCantidadMin(): void
+  ~ actualizarRestriccionCantidadMaxMenorQueCantidadMin(): void
+  ~ obtenerRestriccionNull(): void
+  ~ crearRestriccion_ReturnsCreatedRestriccion(): void
+}
+class ServletInitializer {
+  # configure(SpringApplicationBuilder): SpringApplicationBuilder
+}
+class TokenRequestDto {
+  - token: String
+  + equals(Object): boolean
+  # canEqual(Object): boolean
+  + hashCode(): int
+  + toString(): String
+  + getToken(): String
+  + setToken(String): void
+}
+class TokenValidatorService {
+  - CLIENT_ID: String
+  + verify(String): String
+}
+class Usuario {
+  - email: String
+  - userId: Long
+  - nombre: String
+  + getUserId(): Long
+  + getNombre(): String
+  + getEmail(): String
+  + setUserId(Long): void
+  + setNombre(String): void
+  + setEmail(String): void
+  + builder(): UsuarioBuilder
+}
+class UsuarioApiDto {
+  - userId: Long
+  - nombre: String
+  - email: String
+  + getUserId(): Long
+  + getNombre(): String
+  + getEmail(): String
+  + setUserId(Long): void
+  + setNombre(String): void
+  + setEmail(String): void
+  + builder(): UsuarioApiDtoBuilder
+}
+interface UsuarioRepository << interface >> {
+  + findByEmail(String): Optional<Usuario>
+}
+class UsuarioService {
+  - usuarioRepository: UsuarioRepository
+  + obtenerUsuarioPorId(Long): UsuarioServiceDto
+  - convertirAUsuarioDto(Usuario): UsuarioServiceDto
+  + crearUsuario(UsuarioServiceDto): UsuarioServiceDto
+  + eliminarUsuario(Long): void
+  + obtenerTodosUsuarios(): List<UsuarioServiceDto>
+  + findOrCreateUser(String, String): Long
+  + actualizarUsuario(Long, UsuarioServiceDto): UsuarioServiceDto
+  + findByEmail(String): Usuario
+}
+class UsuarioServiceDto {
+  - email: String
+  - userId: Long
+  - nombre: String
+  + getUserId(): Long
+  + getNombre(): String
+  + getEmail(): String
+  + setUserId(Long): void
+  + setNombre(String): void
+  + setEmail(String): void
+  + builder(): UsuarioServiceDtoBuilder
+}
+class WebConfig {
+  + addCorsMappings(CorsRegistry): void
+}
+
+AnalisisReturnDto                        "1" *-[#595959,plain]-> "detecciones\n*" ObjectDetectionResult                    
+AuthController                           "1" *-[#595959,plain]-> "proyectoService\n1" ProyectoService                          
+AuthController                            -[#595959,dashed]->  TokenRequestDto                          : "«create»"
+AuthController                           "1" *-[#595959,plain]-> "tokenValidatorService\n1" TokenValidatorService                    
+Deteccion                                "1" *-[#595959,plain]-> "proyecto\n1" Proyecto                                 
+DeteccionController                       -[#595959,dashed]->  DeteccionApiDto                          : "«create»"
+DeteccionController                      "1" *-[#595959,plain]-> "deteccionService\n1" DeteccionService                         
+DeteccionService                         "1" *-[#595959,plain]-> "deteccionRepository\n1" DeteccionRepository                      
+DeteccionService                          -[#595959,dashed]->  InvalidParameterException                : "«create»"
+DeteccionService                         "1" *-[#595959,plain]-> "proyectoService\n1" ProyectoService                          
+DeteccionServiceTest                      -[#595959,dashed]->  Deteccion                                : "«create»"
+DeteccionServiceTest                     "1" *-[#595959,plain]-> "deteccion\n1" Deteccion                                
+DeteccionServiceTest                     "1" *-[#595959,plain]-> "deteccionRepository\n1" DeteccionRepository                      
+DeteccionServiceTest                     "1" *-[#595959,plain]-> "deteccionService\n1" DeteccionService                         
+DeteccionServiceTest                     "1" *-[#595959,plain]-> "deteccionDto\n1" DeteccionServiceDto                      
+DeteccionServiceTest                      -[#595959,dashed]->  Proyecto                                 : "«create»"
+DeteccionServiceTest                     "1" *-[#595959,plain]-> "proyecto\n1" Proyecto                                 
+DeteccionServiceTest                     "1" *-[#595959,plain]-> "proyectoService\n1" ProyectoService                          
+Fallo                                    "1" *-[#595959,plain]-> "restriccion\n1" Restriccion                              
+FallosController                          -[#595959,dashed]->  FallosApiDto                             : "«create»"
+FallosController                         "1" *-[#595959,plain]-> "fallosService\n1" FallosService                            
+FallosControllerIntegrationTest          "1" *-[#595959,plain]-> "fallosService\n1" FallosService                            
+FallosService                             -[#595959,dashed]->  Fallo                                    : "«create»"
+FallosService                            "1" *-[#595959,plain]-> "fallosRepository\n1" FallosRepository                         
+FallosService                             -[#595959,dashed]->  InvalidParameterException                : "«create»"
+FallosService                            "1" *-[#595959,plain]-> "restriccionRepository\n1" RestriccionRepository                    
+ObjectDetectionContainer                 "1" *-[#595959,plain]-> "objects\n*" ObjectDetectionResult                    
+ObjectDetectionController                "1" *-[#595959,plain]-> "deteccionService\n1" DeteccionService                         
+ObjectDetectionController                "1" *-[#595959,plain]-> "obj\n1" ObjectDetectionService                   
+ObjectDetectionController                 -[#595959,dashed]->  ObjectPruebaDto                          : "«create»"
+ObjectDetectionControllerIntegrationTest "1" *-[#595959,plain]-> "deteccionService\n1" DeteccionService                         
+ObjectDetectionControllerIntegrationTest "1" *-[#595959,plain]-> "objectDetectionService\n1" ObjectDetectionService                   
+ObjectDetectionService                    -[#595959,dashed]->  AnalisisReturnDto                        : "«create»"
+ObjectDetectionService                   "1" *-[#595959,plain]-> "deteccionService\n1" DeteccionService                         
+ObjectDetectionService                    -[#595959,dashed]->  DeteccionServiceDto                      : "«create»"
+ObjectDetectionService                   "1" *-[#595959,plain]-> "fallosRepository\n1" FallosRepository                         
+ObjectDetectionService                    -[#595959,dashed]->  ObjectDetectionResult                    : "«create»"
+ObjectDetectionService                    -[#595959,dashed]->  ObjetoImagen                             : "«create»"
+ObjectDetectionService                   "1" *-[#595959,plain]-> "proyectoRepository\n1" ProyectoRepository                       
+ObjectDetectionService                   "1" *-[#595959,plain]-> "restriccionRepository\n1" RestriccionRepository                    
+ObjectDetectionServiceTest               "1" *-[#595959,plain]-> "deteccionService\n1" DeteccionService                         
+ObjectDetectionServiceTest               "1" *-[#595959,plain]-> "detectionService\n1" ObjectDetectionService                   
+ObjetoImagen                             "1" *-[#595959,plain]-> "objetos\n*" ObjectDetectionResult                    
+Proyecto                                 "1" *-[#595959,plain]-> "usuario\n1" Usuario                                  
+ProyectoController                        -[#595959,dashed]->  FotoApiDto                               : "«create»"
+ProyectoController                        -[#595959,dashed]->  ProyectoApiDto                           : "«create»"
+ProyectoController                       "1" *-[#595959,plain]-> "proyectoService\n1" ProyectoService                          
+ProyectoController                        -[#595959,dashed]->  ProyectoServiceDto                       : "«create»"
+ProyectoController                        -[#595959,dashed]->  RestriccionApiDto                        : "«create»"
+ProyectoControllerIntegrationTest         -[#595959,dashed]->  ProyectoApiDto                           : "«create»"
+ProyectoService                          "1" *-[#595959,plain]-> "deteccionRepository\n1" DeteccionRepository                      
+ProyectoService                          "1" *-[#595959,plain]-> "fallosRepository\n1" FallosRepository                         
+ProyectoService                           -[#595959,dashed]->  InvalidParameterException                : "«create»"
+ProyectoService                           -[#595959,dashed]->  Proyecto                                 : "«create»"
+ProyectoService                          "1" *-[#595959,plain]-> "proyectoRepository\n1" ProyectoRepository                       
+ProyectoService                           -[#595959,dashed]->  ProyectoServiceDto                       : "«create»"
+ProyectoService                          "1" *-[#595959,plain]-> "restriccionRepository\n1" RestriccionRepository                    
+ProyectoService                           -[#595959,dashed]->  RestriccionServiceDto                    : "«create»"
+ProyectoService                          "1" *-[#595959,plain]-> "usuarioService\n1" UsuarioService                           
+ProyectosTest                             -[#595959,dashed]->  Deteccion                                : "«create»"
+ProyectosTest                            "1" *-[#595959,plain]-> "deteccionRepository\n1" DeteccionRepository                      
+ProyectosTest                            "1" *-[#595959,plain]-> "fallosRepository\n1" FallosRepository                         
+ProyectosTest                            "1" *-[#595959,plain]-> "proyecto\n1" Proyecto                                 
+ProyectosTest                             -[#595959,dashed]->  Proyecto                                 : "«create»"
+ProyectosTest                            "1" *-[#595959,plain]-> "proyectoRepository\n1" ProyectoRepository                       
+ProyectosTest                            "1" *-[#595959,plain]-> "proyectoService\n1" ProyectoService                          
+ProyectosTest                             -[#595959,dashed]->  ProyectoServiceDto                       : "«create»"
+ProyectosTest                            "1" *-[#595959,plain]-> "proyectoDto\n1" ProyectoServiceDto                       
+ProyectosTest                             -[#595959,dashed]->  Restriccion                              : "«create»"
+ProyectosTest                            "1" *-[#595959,plain]-> "restriccionRepository\n1" RestriccionRepository                    
+ProyectosTest                            "1" *-[#595959,plain]-> "usuario\n1" Usuario                                  
+ProyectosTest                             -[#595959,dashed]->  Usuario                                  : "«create»"
+ProyectosTest                            "1" *-[#595959,plain]-> "usuarioService\n1" UsuarioService                           
+Restriccion                              "1" *-[#595959,plain]-> "proyecto\n1" Proyecto                                 
+RestriccionController                    "1" *-[#595959,plain]-> "restriccionService\n1" RestriccionService                       
+RestriccionService                        -[#595959,dashed]->  InvalidParameterException                : "«create»"
+RestriccionService                       "1" *-[#595959,plain]-> "proyectoService\n1" ProyectoService                          
+RestriccionService                        -[#595959,dashed]->  Restriccion                              : "«create»"
+RestriccionService                       "1" *-[#595959,plain]-> "restriccionRepository\n1" RestriccionRepository                    
+RestriccionServiceTest                   "1" *-[#595959,plain]-> "proyecto\n1" Proyecto                                 
+RestriccionServiceTest                    -[#595959,dashed]->  Proyecto                                 : "«create»"
+RestriccionServiceTest                   "1" *-[#595959,plain]-> "proyectoService\n1" ProyectoService                          
+RestriccionServiceTest                   "1" *-[#595959,plain]-> "restriccion\n1" Restriccion                              
+RestriccionServiceTest                    -[#595959,dashed]->  Restriccion                              : "«create»"
+RestriccionServiceTest                   "1" *-[#595959,plain]-> "restriccionRepository\n1" RestriccionRepository                    
+RestriccionServiceTest                   "1" *-[#595959,plain]-> "restriccionService\n1" RestriccionService                       
+RestriccionServiceTest                   "1" *-[#595959,plain]-> "restriccionDto\n1" RestriccionServiceDto                    
+RestriccionServiceTest                    -[#595959,dashed]->  RestriccionServiceDto                    : "«create»"
+TokenValidatorService                     -[#595959,dashed]->  InvalidParameterException                : "«create»"
+UsuarioService                            -[#595959,dashed]->  InvalidParameterException                : "«create»"
+UsuarioService                            -[#595959,dashed]->  Usuario                                  : "«create»"
+UsuarioService                           "1" *-[#595959,plain]-> "usuarioRepository\n1" UsuarioRepository                        
+UsuarioService                            -[#595959,dashed]->  UsuarioServiceDto                        : "«create»"
+@enduml

@@ -27,5 +27,6 @@ public class RestriccionServiceDto {
     private int cantidadMin;
     private int cantidadMax;
     private Boolean cumplida;
+    private Boolean diaria;
 
 }

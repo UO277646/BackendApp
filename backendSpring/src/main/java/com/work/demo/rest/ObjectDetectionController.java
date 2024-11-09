@@ -27,34 +27,13 @@ public class ObjectDetectionController {
     private DeteccionService deteccionService;
     @PostMapping("/detect")
     public ObjetoImagen detectObjects(@RequestParam("image") MultipartFile image,@RequestParam("proyectId")Long proyectId) {
-
-        List<ObjectDetectionResult> objectList = new ArrayList<>();
-        //if(deteccionService.checkToday()){
-            //throw new RuntimeException("Hoy ya se ha subido foto");
-        //}
         ObjetoImagen results = performObjectDetection(image,proyectId);
         return results;
     }
     //Upload file o algo asi
-    @GetMapping("/list")
-    public List<ObjectPruebaDto> detectObjects() {
-        List<ObjectPruebaDto> l=new ArrayList<>();
-        ObjectPruebaDto o=new ObjectPruebaDto();
-        o.setNombre("Juan");
-        o.setApellido("Domingo");
-        l.add(o);
-        return l;
-    }
-    @RequestMapping("/detections/image")
-    public AnalisisReturnDto getDetectionImage(@RequestParam("image") MultipartFile imageFile,@RequestParam("proyectId")Long proyectId) {
-        AnalisisReturnDto response=obj.performAllDetectionsAndReturnImage(imageFile,proyectId);
-        return response;
-    }
 
     private ObjetoImagen performObjectDetection(MultipartFile image, Long proyectId) {
          return obj.performAllDetections(image,proyectId);
-        // Lista para almacenar los resultados combinados de todas las detecciones
-
     }
 }
 

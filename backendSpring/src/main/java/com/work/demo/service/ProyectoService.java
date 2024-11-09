@@ -1,10 +1,8 @@
 package com.work.demo.service;
 
+import com.work.demo.exceptions.InvalidParameterException;
 import com.work.demo.repository.*;
-import com.work.demo.service.dto.FotoServiceDto;
-import com.work.demo.service.dto.ProyectoServiceDto;
-import com.work.demo.service.dto.RestriccionServiceDto;
-import com.work.demo.service.dto.UsuarioServiceDto;
+import com.work.demo.service.dto.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,6 +33,7 @@ public class ProyectoService {
         dto.setIdProyecto(proyecto.getIdProyecto());
         dto.setNombre(proyecto.getNombre());
         dto.setFechaCreacion(proyecto.getFechaCreacion());
+        dto.setMinConf(proyecto.getMinConf());
         return dto;
     }
 
@@ -46,7 +45,7 @@ public class ProyectoService {
                     .map(this::convertirAProyectoDto) // Convierte cada entidad en un DTO
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener la lista de proyectos", e);
+            throw new InvalidParameterException("Error al obtener la lista de proyectos", e);
         }
     }
 
@@ -58,7 +57,7 @@ public class ProyectoService {
                     .map(this::convertirAProyectoDto)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener todos los proyectos", e);
+            throw new InvalidParameterException("Error al obtener todos los proyectos", e);
         }
     }
 
@@ -69,7 +68,7 @@ public class ProyectoService {
             return proyecto.map(this::convertirAProyectoDto)
                     .orElseThrow(() -> new RuntimeException("Proyecto no encontrado con ID: " + id_proyecto));
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener el proyecto con ID: " + id_proyecto, e);
+            throw new InvalidParameterException("Error al obtener el proyecto con ID: " + id_proyecto, e);
         }
     }
     public Proyecto obtenerProyectoPorIdEntidad(Long id_proyecto) {
@@ -77,7 +76,7 @@ public class ProyectoService {
 
             return  proyectoRepository.findById(id_proyecto).get();
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener el proyecto con ID: " + id_proyecto, e);
+            throw new InvalidParameterException("Error al obtener el proyecto con ID: " + id_proyecto, e);
         }
     }
 
@@ -85,8 +84,8 @@ public class ProyectoService {
     @Transactional
     public ProyectoServiceDto crearProyecto(ProyectoServiceDto proyectoDto) {
         try {
-            if(proyectoDto==null || proyectoDto.getNombre()==null  || proyectoDto.getMinConf()<0  ){
-                throw new RuntimeException("Error al crear el proyecto");
+            if(proyectoDto==null || proyectoDto.getNombre()==null  || proyectoDto.getNombre().trim().equals("") || proyectoDto.getMinConf()<0 || proyectoDto.getMinConf()>1  ){
+                throw new InvalidParameterException("Error al crear el proyecto");
             }
             Proyecto nuevoProyecto = new Proyecto();
             Usuario usuario=usuarioService.findByEmail(proyectoDto.getUser());
@@ -94,25 +93,29 @@ public class ProyectoService {
             nuevoProyecto.setMinConf(proyectoDto.getMinConf());
             nuevoProyecto.setNombre(proyectoDto.getNombre());
             nuevoProyecto.setFechaCreacion(Date.valueOf(LocalDate.now()));
+            nuevoProyecto.setBorrado(false);
             Proyecto proyectoGuardado = proyectoRepository.save(nuevoProyecto);
             return convertirAProyectoDto(proyectoGuardado);
         } catch (Exception e) {
-            throw new RuntimeException("Error al crear el proyecto", e);
+            throw new InvalidParameterException("Error al crear el proyecto", e);
         }
     }
 
     // Método para actualizar un proyecto existente y devolver un DTO
     public ProyectoServiceDto actualizarProyecto(Long id_proyecto, ProyectoServiceDto proyectoActualizadoDto) {
         try {
+            if(proyectoActualizadoDto==null || proyectoActualizadoDto.getNombre()==null  || proyectoActualizadoDto.getNombre().trim().equals("") || proyectoActualizadoDto.getMinConf()<0 || proyectoActualizadoDto.getMinConf()>1  ){
+                throw new InvalidParameterException("Error al crear el proyecto");
+            }
             Proyecto proyectoExistente = proyectoRepository.findById(id_proyecto)
                     .orElseThrow(() -> new RuntimeException("Proyecto no encontrado con ID: " + id_proyecto));
 
             proyectoExistente.setNombre(proyectoActualizadoDto.getNombre());
-            proyectoExistente.setFechaCreacion(proyectoActualizadoDto.getFechaCreacion());
+            proyectoExistente.setMinConf(proyectoActualizadoDto.getMinConf());
             Proyecto proyectoActualizado = proyectoRepository.save(proyectoExistente);
             return convertirAProyectoDto(proyectoActualizado);
         } catch (Exception e) {
-            throw new RuntimeException("Error al actualizar el proyecto con ID: " + id_proyecto, e);
+            throw new InvalidParameterException("Error al actualizar el proyecto con ID: " + id_proyecto, e);
         }
     }
 
@@ -120,12 +123,14 @@ public class ProyectoService {
     public void eliminarProyecto(Long id_proyecto) {
         try {
             if (proyectoRepository.existsById(id_proyecto)) {
-                proyectoRepository.deleteById(id_proyecto);
+                Proyecto proyectoExistente = proyectoRepository.findById(id_proyecto).orElseThrow(() -> new RuntimeException("Proyecto no encontrado con ID: " + id_proyecto));
+                proyectoExistente.setBorrado(true);
+                proyectoRepository.save(proyectoExistente);
             } else {
-                throw new RuntimeException("No se puede eliminar, proyecto no encontrado con ID: " + id_proyecto);
+                throw new InvalidParameterException("No se puede eliminar, proyecto no encontrado con ID: " + id_proyecto);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Error al eliminar el proyecto con ID: " + id_proyecto, e);
+            throw new InvalidParameterException("Error al eliminar el proyecto con ID: " + id_proyecto, e);
         }
     }
     @Transactional
@@ -147,7 +152,7 @@ public class ProyectoService {
         restricciones.forEach(restriccion -> {
             System.out.println(restriccion);
             // Solo evaluamos las restricciones que están dentro del rango de fechas
-            if ((restriccion.getFechaHasta().before(fechaActual) || restriccion.getFechaHasta().equals(fechaActual)) && restriccion.getCumplida()==null) {
+            if ((restriccion.getFechaHasta().before(fechaActual) || restriccion.getFechaHasta().equals(fechaActual)) && restriccion.getCumplida()==null && !restriccion.getDiaria()) {
 
                 // Filtramos las detecciones que cumplen con el intervalo de fechas y el objeto
                 List<Deteccion> deteccionesFiltradas = detecciones.stream()
@@ -169,8 +174,9 @@ public class ProyectoService {
                     // Creamos un nuevo fallo en la base de datos cuando no se cumple la restricción
                     Fallo nuevoFallo = Fallo.builder()
                             .restriccion(restriccion)  // Asociamos la restricción que falló
-                            .datos("La restricción no se cumplió: Objeto esperado: " + restriccion.getObjeto() +
-                                    ", Cantidad detecciones: " + cantidadDetecciones)
+                            .datos("La restricción no se cumplió: Objeto esperado: " + restriccion.getObjeto() +", se esperaban entre "+restriccion.getCantidadMin()+" y "+
+                                    restriccion.getCantidadMax()+" de apariciones y son: " + cantidadDetecciones+", esta comprobacion se ha acabado de incumplir el dia: "+fechaActual)
+                            .fecha(fechaActual)
                             .build();
 
                     // Guardamos el fallo en la base de datos
@@ -203,7 +209,7 @@ public class ProyectoService {
         dto.setCantidadMin(restriccion.getCantidadMin());
         dto.setCantidadMax(restriccion.getCantidadMax());
         dto.setCumplida(restriccion.getCumplida());
-
+        dto.setDiaria(restriccion.getDiaria());
         // Retornamos el DTO
         return dto;
     }
@@ -215,8 +221,11 @@ public class ProyectoService {
 
     public List<ProyectoServiceDto> findByEmail (String email,String nombre) {
         try{
+            if(email==null || nombre==null  || nombre.trim().equals("") || email.trim().equals("") ){
+                throw new InvalidParameterException("Error al crear el proyecto");
+            }
             Long usuarioId=usuarioService.findOrCreateUser(email,nombre);
-            List<Proyecto> proyectos = proyectoRepository.findByUsuarioUserId(usuarioId);
+            List<Proyecto> proyectos = proyectoRepository.findByUsuarioUserIdAndBorradoFalse(usuarioId);
             return proyectos.stream()
                     .map(this::convertirAProyectoDto) // Convierte cada entidad en un DTO
                     .collect(Collectors.toList());
@@ -227,9 +236,55 @@ public class ProyectoService {
     }
 
     public Boolean checkProject (Long projectId, String email) {
-        Long usuarioId=usuarioService.findByEmail(email).getUserId();
-        Proyecto p=proyectoRepository.findById(projectId).get();
-        return p.getUsuario().getUserId()==usuarioId;
+        try{
+            if(email==null || email.trim().equals("") ){
+                throw new InvalidParameterException("Error al comprobar el usuario del proyecto");
+            }
+            Long usuarioId=usuarioService.findByEmail(email).getUserId();
+            Proyecto p=proyectoRepository.findById(projectId).get();
+            return p.getUsuario().getUserId()==usuarioId;
+        }catch(Exception e){
+            throw new InvalidParameterException("email incorrecto",e);
+        }
+    }
+    @Transactional
+    public List<FallosServiceDto> findFallosDia (Long code, Date fechaDeteccion) {
+        List<Fallo> fallos = fallosRepository.findFallosByProyectoIdAndFechaDeteccion(code, fechaDeteccion);
+        return fallos.stream()
+                .map(this::convertirAFallosDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<DeteccionServiceDto> findDeteccionesDia (Long code, Date fechaDeteccion) {
+        // Buscar las detecciones del proyecto en la fecha indicada
+        List<Deteccion> detecciones = deteccionRepository.findByProyectoIdAndFechaDeteccion(code, fechaDeteccion);
+
+        // Convertir las detecciones a DTO
+        return detecciones.stream()
+                .map(this::convertirADeteccionDto)
+                .collect(Collectors.toList());
+    }
+    private FallosServiceDto convertirAFallosDto(Fallo fallo) {
+        return FallosServiceDto.builder()
+                .falloId(fallo.getFalloId())
+                .restriccionId(fallo.getRestriccion().getIdRestriccion())
+                .datos(fallo.getDatos())
+                .fecha(fallo.getFecha())
+                .build();
+    }
+    private DeteccionServiceDto convertirADeteccionDto(Deteccion deteccion) {
+        return DeteccionServiceDto.builder()
+                .deteccionId(deteccion.getDeteccionId())
+                .proyectoId(deteccion.getProyecto().getIdProyecto())
+                .fotoId(deteccion.getFotoId())
+                .objeto(deteccion.getObjeto())
+                .x(deteccion.getX())
+                .y(deteccion.getY())
+                .weight(deteccion.getWeight())
+                .height(deteccion.getHeight())
+                .confidence(deteccion.getConfidence())
+                .build();
     }
 }
 
