@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 import java.io.InputStream;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,11 +22,12 @@ public class PdfGenerator {
 
     @Autowired
     private ProyectoService p;
-    public byte[] generatePdf(Long code, Date fechaDeteccion) {
+    public byte[] generatePdf(Long code) {
         try {
             //create a PDF writer instance and pass output stream
-
-            JasperPrint jasperPrint= generateJasperPrintDelegateTemplate(code,fechaDeteccion);
+            LocalDate localDate = LocalDate.now();
+            java.sql.Date fechaActual = Date.valueOf(localDate);
+            JasperPrint jasperPrint= generateJasperPrintDelegateTemplate(code,fechaActual);
             return JasperExportManager.exportReportToPdf(jasperPrint);
         }
         catch(Exception exp) {
@@ -37,15 +39,16 @@ public class PdfGenerator {
         try{
             List<FallosServiceDto> fallos=p.findFallosDia(code,fechaDeteccion);
             List<DeteccionServiceDto> detecciones=p.findDeteccionesDia(code,fechaDeteccion);
+            String nombre=p.findById(code).getUsuario().getNombre();
             Map<String,Object> parameters =new HashMap<>();
-            parameters.put("logo", ImageIO.read(Objects.requireNonNull(getClass().getResource("/reports/logo.jpg"))));
-            parameters.put("uniovi",ImageIO.read(Objects.requireNonNull(getClass().getResource("/reports/uniovi.jpg"))));
+            parameters.put("logo", ImageIO.read(Objects.requireNonNull(getClass().getResource("/reports/uniovi.jpg"))));
+            parameters.put("uniovi",ImageIO.read(Objects.requireNonNull(getClass().getResource("/reports/logo.jpg"))));
             StringBuilder dataBuilder = new StringBuilder();
             for (DeteccionServiceDto deteccion : detecciones) {
-                dataBuilder.append("Se detectó un ")
+                dataBuilder.append("• Se detectó un ")
                         .append(deteccion.getObjeto())
                         .append(" con un ")
-                        .append(deteccion.getConfidence())
+                        .append(String.format("%.2f", deteccion.getConfidence()))
                         .append(" de confianza.\n");
             }
             for (FallosServiceDto fallo : fallos) {
@@ -60,7 +63,7 @@ public class PdfGenerator {
             String fecha1Formateada=formato.format(fechaDeteccion);
             parameters.put("fecha",fecha1Formateada);
             //
-            parameters.put("tipo","No dispone de tipo");
+            parameters.put("tipo",nombre);
             InputStream templateStream= getClass().getResourceAsStream("/reports/Resguardo.jrxml");
             JasperReport jasperReport= JasperCompileManager.compileReport(templateStream);
             return JasperFillManager.fillReport(jasperReport,parameters,new JREmptyDataSource());

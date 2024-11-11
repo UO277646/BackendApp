@@ -13,7 +13,7 @@ public interface FallosRepository extends JpaRepository<Fallo,Long> {
     List<Fallo> findByRestriccion(Long idRec);
     @Query("SELECT f FROM Fallo f " +
             "JOIN f.restriccion r " +
-            "WHERE r.proyecto.idProyecto = :proyectoId " +
+            "WHERE r.proyecto.idProyecto = :code " +
             "AND f.fecha = :fechaDeteccion")
     List<Fallo> findFallosByProyectoIdAndFechaDeteccion (Long code, Date fechaDeteccion);
 }
