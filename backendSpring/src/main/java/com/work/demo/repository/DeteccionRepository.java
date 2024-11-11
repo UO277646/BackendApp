@@ -26,7 +26,7 @@ public interface DeteccionRepository extends JpaRepository<Deteccion,Long> {
     @Query("SELECT MAX(d.deteccionId) FROM Deteccion d")
     int findLastId ();
     @Query("SELECT d FROM Deteccion d " +
-            "WHERE d.proyecto.idProyecto = :proyectoId " +
+            "WHERE d.proyecto.idProyecto = :code " +
             "AND d.fotoId = :fechaDeteccion")
     List<Deteccion> findByProyectoIdAndFechaDeteccion (Long code, Date fechaDeteccion);
 }

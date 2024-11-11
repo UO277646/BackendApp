@@ -179,13 +179,25 @@ public class ObjectDetectionService {
                             Graphics2D graphics = image.createGraphics();
                             graphics.setColor(Color.RED);
                             graphics.setStroke(new java.awt.BasicStroke(3));
-                            graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
-                            String label = String.format("%d.-%s: %.2f",this.idDeteccion, "Cono", confidence);
 
-                            // Dibujar el texto sobre la imagen, justo encima de la caja
+                            graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+
+                            String label = String.format("%d.-%s: %.2f", this.idDeteccion, "Cono", confidence);
                             Font font = new Font("Arial", Font.BOLD, 16);
                             graphics.setFont(font);
-                            graphics.drawString(label, (int) x1, (int) y1 - 5); // Posiciona el texto ligeramente por encima de la caja
+                            FontMetrics metrics = graphics.getFontMetrics(font);
+
+                            int textX = (int) x1 + 5;  // Margen izquierdo dentro de la caja
+                            int textY = (int) (y2 - y1) + (int) y1 - 5;  // Margen inferior dentro de la caja
+
+                            int backgroundWidth = metrics.stringWidth(label) + 10; // Ancho del fondo, un poco más grande que el texto
+                            int backgroundHeight = metrics.getHeight(); // Altura del fondo del texto
+
+                            graphics.setColor(new Color(255, 0, 0, 180)); // Rojo semi-transparente
+                            graphics.fillRect(textX - 5, textY - backgroundHeight + 5, backgroundWidth, backgroundHeight);
+
+                            graphics.setColor(Color.WHITE);
+                            graphics.drawString(label, textX, textY);
 
                             graphics.dispose();
                         }
@@ -302,13 +314,24 @@ public class ObjectDetectionService {
                             Graphics2D graphics = image.createGraphics();
                             graphics.setColor(Color.BLUE);  // Cambia a color azul para vehículos
                             graphics.setStroke(new java.awt.BasicStroke(3));
+
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+
                             String label = String.format("%d.-%s: %.2f", this.idDeteccion, "Vehiculo", confidence);
                             Font font = new Font("Arial", Font.BOLD, 16);
                             graphics.setFont(font);
                             FontMetrics metrics = graphics.getFontMetrics(font);
-                            int textX = (int) x1 + 5;  // Un pequeño margen de la izquierda de la caja
-                            int textY = (int) y1 + (int) (y2 - y1) - 5;  // Un pequeño margen desde la parte inferior de la caja
+
+                            int textX = (int) x1 + 5;  // Margen izquierdo dentro de la caja
+                            int textY = (int) y1 + (int) (y2 - y1) - 5;  // Margen inferior dentro de la caja
+
+                            int backgroundWidth = metrics.stringWidth(label) + 10; // Un poco más ancho que el texto
+                            int backgroundHeight = metrics.getHeight(); // Altura del fondo
+
+                            graphics.setColor(new Color(0, 0, 255, 180)); // Azul semi-transparente
+                            graphics.fillRect(textX - 5, textY - backgroundHeight + 5, backgroundWidth, backgroundHeight);
+
+                            graphics.setColor(Color.WHITE);
                             graphics.drawString(label, textX, textY);
 
                             graphics.dispose();
@@ -534,15 +557,33 @@ public class ObjectDetectionService {
                             results.add(detectionResult);
                             // Dibujar la detección en la imagen
                             Graphics2D graphics = image.createGraphics();
-                            graphics.setColor(Color.BLUE);
+                            graphics.setColor(Color.BLUE);  // Color azul para la caja de detección
                             graphics.setStroke(new java.awt.BasicStroke(3));
-                            graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
-                            String label = String.format("%d.-%s: %.2f",this.idDeteccion, "Pala", confidence);
 
-                            // Dibujar el texto sobre la imagen, justo encima de la caja
+// Dibuja el rectángulo de detección
+                            graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+
+// Define el texto y configura la fuente
+                            String label = String.format("%d.-%s: %.2f", this.idDeteccion, "Pala", confidence);
                             Font font = new Font("Arial", Font.BOLD, 16);
                             graphics.setFont(font);
-                            graphics.drawString(label, (int) x1, (int) y1 - 5); // Posiciona el texto ligeramente por encima de la caja
+                            FontMetrics metrics = graphics.getFontMetrics(font);
+
+// Calcula la posición del texto dentro de la caja, en la esquina inferior izquierda
+                            int textX = (int) x1 + 5;  // Margen izquierdo
+                            int textY = (int) y1 + (int) (y2 - y1) - 5;  // Margen inferior dentro de la caja
+
+// Calcula las dimensiones del fondo del texto
+                            int backgroundWidth = metrics.stringWidth(label) + 10; // Ancho un poco mayor al del texto
+                            int backgroundHeight = metrics.getHeight(); // Altura del fondo
+
+// Dibuja el fondo en azul
+                            graphics.setColor(new Color(0, 0, 255, 180)); // Azul semi-transparente
+                            graphics.fillRect(textX - 5, textY - backgroundHeight + 5, backgroundWidth, backgroundHeight);
+
+// Dibuja el texto en blanco encima del fondo azul
+                            graphics.setColor(Color.WHITE);
+                            graphics.drawString(label, textX, textY);
 
                             graphics.dispose();
                         }
@@ -670,6 +711,132 @@ public class ObjectDetectionService {
 
             // Guardar la imagen con el recuadro en el disco
             String outputImagePath = "C:\\Users\\user\\Desktop\\detected_camion_image.jpg";
+            this.imagen=image;
+            File outputfile = new File(outputImagePath);
+            ImageIO.write(image, "jpg", outputfile);
+            System.out.println("Imagen guardada en: " + outputImagePath);
+
+            // Liberar los recursos
+            inputTensor.close();
+            outputTensor.close();
+            session.close();
+            env.close();
+
+        } catch (OrtException | IOException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Retornar los resultados
+        return results;
+    }
+    public List<ObjectDetectionResult> performBarcoDetection(MultipartFile imageFile, Long proyectoId) {
+        List<ObjectDetectionResult> results = new ArrayList<>();
+        float iouThreshold = 0.5f;  // Umbral para considerar que dos cajas representan el mismo objeto
+
+        try {
+            // Cargar el modelo ONNX
+            Path modelPath = Paths.get(ClassLoader.getSystemResource("models/barcos/best.onnx").toURI());
+            // Cargar el modelo ONNX
+            OrtEnvironment env = OrtEnvironment.getEnvironment();
+            OrtSession session = env.createSession(modelPath.toString(), new OrtSession.SessionOptions());
+
+            // Leer la imagen desde el MultipartFile y redimensionarla
+            BufferedImage image=null;
+            if(this.imagen==null) {
+                // Leer la imagen desde el MultipartFile y redimensionarla
+                image=resizeImage(ImageUtils.convertMultipartFileToBufferedImage(imageFile), 640, 640);
+            }else{
+                image=this.imagen;
+            }
+            // Convertir la imagen a un tensor de entrada
+            float[][][][] inputData = ImageUtils.convertImageTo4DFloatArray(image);
+            OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputData);
+            Map<String, OnnxTensorLike> inputs = Collections.singletonMap("images", inputTensor);
+
+            // Realizar la inferencia
+            OrtSession.Result result = session.run(inputs);
+            OnnxTensor outputTensor = (OnnxTensor) result.get("output0").get();
+            float[][][] outputData = (float[][][]) outputTensor.getValue();
+            long[] outputShape = outputTensor.getInfo().getShape();
+            System.out.println("Forma del tensor de salida: " + Arrays.toString(outputShape));
+
+            // Procesar la salida del tensor
+            for (int i = 0; i < outputData.length; i++) {
+                for (int j = 0; j < outputData[i][0].length; j++) {
+                    // Descomponemos las 5 características
+                    float cx = outputData[i][0][j];
+                    float cy = outputData[i][1][j];
+                    float width = outputData[i][2][j];
+                    float height = outputData[i][3][j];
+                    boolean passesConfidenceFilter = false;
+                    float confianzaMaxima=0;
+                    for (int k = 4; k <= 13; k++) {
+                        if (outputData[i][k][j] >= this.minConfig) {
+                            passesConfidenceFilter = true;
+                            confianzaMaxima=outputData[i][k][j];
+                            break; // Detener el ciclo tan pronto se encuentra una confianza válida
+                        }
+                    }
+                    // Filtrar por confianza
+                    if (passesConfidenceFilter) {
+                        // Convertir de coordenadas centrales a esquinas
+                        float x1 = cx - width / 2;
+                        float y1 = cy - height / 2;
+                        float x2 = cx + width / 2;
+                        float y2 = cy + height / 2;
+
+                        // Crear la nueva caja delimitadora
+                        float[] newBox = new float[]{x1, y1, x2, y2};
+                        boolean esCajaDuplicada = false;
+                        for (ObjectDetectionResult resultDet : results) {
+                            float existingX1 = (float) (resultDet.getX() - resultDet.getWeight() / 2);
+                            float existingY1 = (float) (resultDet.getY() - resultDet.getHeight() / 2);
+                            float existingX2 = (float) (resultDet.getX() + resultDet.getWeight() / 2);
+                            float existingY2 = (float) (resultDet.getY() + resultDet.getHeight() / 2);
+                            float[] existingBox = new float[]{existingX1, existingY1, existingX2, existingY2};
+
+                            // Calcular IoU y verificar duplicados
+                            float iou = calcularIoU(newBox, existingBox);
+                            if (iou > iouThreshold) {
+                                esCajaDuplicada = true;
+                                break;
+                            }
+                        }
+
+                        // Si no es duplicada, añadir la detección
+                        if (!esCajaDuplicada) {
+
+                            deteccionService.crearDeteccion(new DeteccionServiceDto(null, proyectoId, null, "Barco", x1, y1, x2, y2,confianzaMaxima ));
+                            this.idDeteccion=deteccionService.findLastId(); ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, confianzaMaxima, "Camion",this.idDeteccion);
+                            results.add(detectionResult);
+                            // Dibujar la detección en la imagen
+                            Graphics2D graphics = image.createGraphics();
+                            graphics.setColor(Color.RED);
+                            graphics.setStroke(new java.awt.BasicStroke(3));
+                            graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+                            String label = String.format("%d.-%s: %.2f", this.idDeteccion, "Barco", confianzaMaxima);
+
+                            Font font = new Font("Arial", Font.BOLD, 16);
+                            graphics.setFont(font);
+                            FontMetrics metrics = graphics.getFontMetrics(font);
+
+                            int textX = (int) x1 + 5;  // Margen de 5 píxeles desde el borde izquierdo de la caja
+                            int textY = (int) y1 + (int) (y2 - y1) - 5;  // Margen de 5 píxeles desde el borde inferior de la caja
+
+                            graphics.drawString(label, textX, textY);
+
+                            graphics.dispose();
+                            passesConfidenceFilter=false;
+                            confianzaMaxima=0;
+                        }
+                    }
+                }
+            }
+
+            // Guardar la imagen con el recuadro en el disco
+            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_barco_image.jpg";
             this.imagen=image;
             File outputfile = new File(outputImagePath);
             ImageIO.write(image, "jpg", outputfile);
@@ -1411,6 +1578,9 @@ public class ObjectDetectionService {
         System.out.println("Comienzo analisis montacargas");
         List<ObjectDetectionResult> forklifts = performMontacargaDetection(image,proyectId);
         combinedResults.addAll(forklifts);
+        System.out.println("Comienzo analisis barcos");
+        List<ObjectDetectionResult> barcos = performBarcoDetection(image,proyectId);
+        combinedResults.addAll(barcos);
         ObjetoImagen obj=new ObjetoImagen();
         obj.setFallos(checkRestricciones(proyectId,combinedResults));
 

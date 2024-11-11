@@ -71,6 +71,14 @@ public class ProyectoService {
             throw new InvalidParameterException("Error al obtener el proyecto con ID: " + id_proyecto, e);
         }
     }
+    public Proyecto findById(Long id_proyecto) {
+        try {
+            Optional<Proyecto> proyecto = proyectoRepository.findById(id_proyecto);
+            return proyecto.get();
+        } catch (Exception e) {
+            throw new InvalidParameterException("Error al obtener el proyecto con ID: " + id_proyecto, e);
+        }
+    }
     public Proyecto obtenerProyectoPorIdEntidad(Long id_proyecto) {
         try {
 
