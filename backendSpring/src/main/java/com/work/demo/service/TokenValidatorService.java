@@ -45,4 +45,14 @@ public class TokenValidatorService {
             throw new InvalidParameterException("Invalid ID token");
         }
     }
+    public Boolean verifyCamera(String idTokenString) throws GeneralSecurityException, IOException {
+        HttpTransport transport = new NetHttpTransport();
+        JsonFactory jsonFactory = new JacksonFactory();
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
+                .setAudience(Collections.singletonList(CLIENT_ID))
+                .build();
+
+        GoogleIdToken idToken = verifier.verify(idTokenString);
+        return idToken!=null;
+    }
 }

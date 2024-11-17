@@ -1,8 +1,10 @@
 package com.work.demo.rest;
 
 import com.work.demo.rest.dto.ObjectDetectionResult;
+import com.work.demo.rest.dto.TokenRequestDto;
 import com.work.demo.service.DeteccionService;
 import com.work.demo.service.PdfGenerator;
+import com.work.demo.service.TokenValidatorService;
 import com.work.demo.service.dto.AnalisisReturnDto;
 import com.work.demo.service.dto.ObjetoImagen;
 import net.sf.jasperreports.engine.JRException;
@@ -18,6 +20,8 @@ import com.work.demo.rest.dto.ObjectPruebaDto;
 import com.work.demo.service.ObjectDetectionService;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +30,8 @@ import java.util.List;
 public class ObjectDetectionController {
     @Autowired
     private ObjectDetectionService obj;
+    @Autowired
+    private TokenValidatorService tokenValidatorService;
 
     @Autowired
     private PdfGenerator pdfGenerator;
@@ -33,6 +39,21 @@ public class ObjectDetectionController {
     public ObjetoImagen detectObjects(@RequestParam("image") MultipartFile image,@RequestParam("proyectId")Long proyectId) {
         ObjetoImagen results = performObjectDetection(image,proyectId);
         return results;
+    }
+    @PostMapping("/camera/detect")
+    public ObjetoImagen verifyToken(@RequestParam("image") MultipartFile image,@RequestParam("proyectId")Long proyectId,@RequestParam("token") String tokenRequest) {
+        try {
+            // Llama al servicio que valida el token y genera el JWT
+            boolean jwt = tokenValidatorService.verifyCamera(tokenRequest);
+            if (jwt) {
+                return  performObjectDetection(image,proyectId);
+            } else {
+                return null;
+            }
+        } catch (GeneralSecurityException | IOException e) {
+            // Manejar posibles excepciones relacionadas con la verificación del token
+            return null;
+        }
     }
     //Upload file o algo asi
     @GetMapping("/generate/{id}")
