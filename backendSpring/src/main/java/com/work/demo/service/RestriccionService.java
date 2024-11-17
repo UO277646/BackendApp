@@ -60,7 +60,7 @@ public class RestriccionService {
     @Transactional
     // Método para crear una nueva restricción
     public RestriccionServiceDto crearRestriccion(RestriccionServiceDto restriccionDto) {
-        if(restriccionDto==null || restriccionDto.getCantidadMin()<0 || restriccionDto.getCantidadMax() < restriccionDto.getCantidadMin()){
+        if(restriccionDto==null || restriccionDto.getCantidadMin()<0 || restriccionDto.getCantidadMax() < restriccionDto.getCantidadMin() || restriccionDto.getFechaHasta().before(restriccionDto.getFechaDesde())){
             throw new InvalidParameterException("Error al crear el proyecto");
         }
         try {
