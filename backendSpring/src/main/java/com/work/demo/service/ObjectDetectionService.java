@@ -278,9 +278,9 @@ public class ObjectDetectionService {
                     float width = outputData[i][2][j];
                     float height = outputData[i][3][j];
                     float confidence = outputData[i][4][j];
-
+                    float confidence2 = outputData[i][5][j];
                     // Filtrar por confianza
-                    if (confidence >= this.minConfig) {
+                    if (confidence >= 0.814 || confidence2>= 0.814) {
                         // Convertir de coordenadas centrales a esquinas
                         float x1 = cx - width / 2;
                         float y1 = cy - height / 2;
@@ -306,9 +306,9 @@ public class ObjectDetectionService {
 
                         if (!esCajaDuplicada) {
 
-                            deteccionService.crearDeteccion(new DeteccionServiceDto(null, proyectoId, null, "Vehiculo", x1, y1, x2, y2, confidence));
+                            deteccionService.crearDeteccion(new DeteccionServiceDto(null, proyectoId, null, "Vehiculo", x1, y1, x2, y2, this.maxConfidence(confidence,confidence2)));
                             this.idDeteccion=deteccionService.findLastId();
-                            ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, confidence, "Vehiculo",this.idDeteccion);
+                            ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, this.maxConfidence(confidence,confidence2), "Vehiculo",this.idDeteccion);
                             results.add(detectionResult);
                             // Dibujar el recuadro en la imagen
                             Graphics2D graphics = image.createGraphics();
@@ -317,7 +317,7 @@ public class ObjectDetectionService {
 
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
 
-                            String label = String.format("%d.-%s: %.2f", this.idDeteccion, "Vehiculo", confidence);
+                            String label = String.format("%d.-%s: %.2f", this.idDeteccion, "Vehiculo", this.maxConfidence(confidence,confidence2));
                             Font font = new Font("Arial", Font.BOLD, 16);
                             graphics.setFont(font);
                             FontMetrics metrics = graphics.getFontMetrics(font);
@@ -809,7 +809,7 @@ public class ObjectDetectionService {
                         if (!esCajaDuplicada) {
 
                             deteccionService.crearDeteccion(new DeteccionServiceDto(null, proyectoId, null, "Barco", x1, y1, x2, y2,confianzaMaxima ));
-                            this.idDeteccion=deteccionService.findLastId(); ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, confianzaMaxima, "Camion",this.idDeteccion);
+                            this.idDeteccion=deteccionService.findLastId(); ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, confianzaMaxima, "Barco",this.idDeteccion);
                             results.add(detectionResult);
                             // Dibujar la detección en la imagen
                             Graphics2D graphics = image.createGraphics();
@@ -1187,7 +1187,7 @@ public class ObjectDetectionService {
                     }
 
                     // Procesar si la confianza máxima es suficiente
-                    if (maxConfidence >= 0.3) {
+                    if (maxConfidence >= 0.41) {
                         String classLabel = classLabels[detectedClassIndex];
 
                         // Convertir coordenadas de centro a esquinas
@@ -1474,35 +1474,38 @@ public class ObjectDetectionService {
                             graphics.setColor(Color.RED);
                             graphics.setStroke(new java.awt.BasicStroke(3));
 
-                            // Dibujar el rectángulo (caja delimitadora)
+// Dibujar el rectángulo (caja delimitadora)
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
 
-                            // Crear el texto con la clase y la confianza (redondeada a dos decimales)
-                            // Crear el texto con la clase y la confianza (redondeada a dos decimales)
-                            String label = String.format("%d.-%s: %.2f",this.idDeteccion, "Montacargas", confidence);
+// Crear el texto con la clase y la confianza (redondeada a dos decimales)
+                            String label = String.format("%d.-%s: %.2f", this.idDeteccion, "Montacargas", confidence);
 
-                            // Dibujar el texto sobre la imagen, justo encima de la caja
+// Configurar la fuente
                             Font font = new Font("Arial", Font.BOLD, 16);
                             graphics.setFont(font);
 
-                            // Obtener las métricas de texto para calcular el tamaño del fondo
+// Obtener las métricas de texto para calcular el tamaño del fondo
                             FontMetrics metrics = graphics.getFontMetrics(font);
                             int textWidth = metrics.stringWidth(label);
                             int textHeight = metrics.getHeight();
 
-                            // Establecer color del fondo (amarillo)
-                            graphics.setColor(Color.RED);
+// Calcular la posición del texto (esquina inferior izquierda)
+                            int textX = (int) x1;
+                            int textY = (int) y2 - 5; // Ajustar para que quede justo dentro del borde inferior
 
-                            // Dibujar un rectángulo como fondo del texto
-                            graphics.fillRect((int) x1, (int) y1 - textHeight, textWidth, textHeight);
+// Establecer color del fondo (rojo con transparencia)
+                            graphics.setColor(new Color(255, 0, 0, 200)); // Rojo semitransparente
 
-                            // Establecer color de la letra (blanco)
-                            graphics.setColor(Color.BLACK);
+// Dibujar un rectángulo como fondo del texto
+                            graphics.fillRect(textX, textY - textHeight, textWidth, textHeight);
 
-                            // Dibujar el texto encima del fondo amarillo
-                            graphics.drawString(label, (int) x1, (int) y1 - 5);
+// Establecer color de la letra (blanco)
+                            graphics.setColor(Color.WHITE);
 
-                            // Liberar los recursos gráficos
+// Dibujar el texto encima del fondo rojo
+                            graphics.drawString(label, textX, textY - 5);
+
+// Liberar los recursos gráficos
                             graphics.dispose();
                         }
                     }
@@ -1539,10 +1542,16 @@ public class ObjectDetectionService {
         return resizedImage;
     }
 
-    public ObjetoImagen performAllDetections (MultipartFile image, Long proyectId) {
+    public ObjetoImagen performAllDetections (MultipartFile image, Long proyectId) throws IOException {
         if(image==null || proyectId==null){
             throw new RuntimeException("Error al detectar imagenes");
         }
+
+        String outputImagePath = "C:\\Users\\user\\Desktop\\"+proyectId+"_"+new Date(System.currentTimeMillis())+".jpg";
+        File outputfile = new File(outputImagePath);
+        ImageIO.write(resizeImage(ImageUtils.convertMultipartFileToBufferedImage(image), 640, 640), "jpg", outputfile);
+
+        System.out.println("Imagen guardada en: " + outputImagePath);
         this.idDeteccion=deteccionService.findLastId();
         List<ObjectDetectionResult> combinedResults = new ArrayList<>();
         Optional<Proyecto> p=proyectoRepository.findById(proyectId);
@@ -1600,10 +1609,6 @@ public class ObjectDetectionService {
                         .append("Ancho: ").append(resultado.getWeight()).append(", ")
                         .append("Alto: ").append(resultado.getHeight()).append(")\n\n");
             }
-            LocalDate localDate=LocalDate.now();
-            //java.sql.Date fechaActual=Date.valueOf(localDate);
-            //emailService.enviarCorreo(usuario.getEmail(), "Estado detecciones dia: " + fechaActual, cuerpoCorreo.toString());
-            // Devolver la lista combinada de todas las detecciones
         }return obj;
     }
 
