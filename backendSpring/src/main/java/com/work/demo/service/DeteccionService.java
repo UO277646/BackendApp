@@ -252,7 +252,7 @@ public class DeteccionService {
                 g2d.fillRect(x1, y1 + rectHeight - textHeight, textWidth, textHeight);
 
                 // Dibujar el texto en blanco
-                g2d.setColor(Color.WHITE);
+                g2d.setColor(Color.BLACK);
                 g2d.drawString(label, x1, y1 + rectHeight - 5);
             }
 

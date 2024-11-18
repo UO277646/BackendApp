@@ -278,9 +278,9 @@ public class ObjectDetectionService {
                     float width = outputData[i][2][j];
                     float height = outputData[i][3][j];
                     float confidence = outputData[i][4][j];
-
+                    float confidence2 = outputData[i][5][j];
                     // Filtrar por confianza
-                    if (confidence >= this.minConfig) {
+                    if (confidence >= 0.814 || confidence2>= 0.814) {
                         // Convertir de coordenadas centrales a esquinas
                         float x1 = cx - width / 2;
                         float y1 = cy - height / 2;
@@ -306,9 +306,9 @@ public class ObjectDetectionService {
 
                         if (!esCajaDuplicada) {
 
-                            deteccionService.crearDeteccion(new DeteccionServiceDto(null, proyectoId, null, "Vehiculo", x1, y1, x2, y2, confidence));
+                            deteccionService.crearDeteccion(new DeteccionServiceDto(null, proyectoId, null, "Vehiculo", x1, y1, x2, y2, this.maxConfidence(confidence,confidence2)));
                             this.idDeteccion=deteccionService.findLastId();
-                            ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, confidence, "Vehiculo",this.idDeteccion);
+                            ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, this.maxConfidence(confidence,confidence2), "Vehiculo",this.idDeteccion);
                             results.add(detectionResult);
                             // Dibujar el recuadro en la imagen
                             Graphics2D graphics = image.createGraphics();
@@ -317,7 +317,7 @@ public class ObjectDetectionService {
 
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
 
-                            String label = String.format("%d.-%s: %.2f", this.idDeteccion, "Vehiculo", confidence);
+                            String label = String.format("%d.-%s: %.2f", this.idDeteccion, "Vehiculo", this.maxConfidence(confidence,confidence2));
                             Font font = new Font("Arial", Font.BOLD, 16);
                             graphics.setFont(font);
                             FontMetrics metrics = graphics.getFontMetrics(font);
@@ -809,7 +809,7 @@ public class ObjectDetectionService {
                         if (!esCajaDuplicada) {
 
                             deteccionService.crearDeteccion(new DeteccionServiceDto(null, proyectoId, null, "Barco", x1, y1, x2, y2,confianzaMaxima ));
-                            this.idDeteccion=deteccionService.findLastId(); ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, confianzaMaxima, "Camion",this.idDeteccion);
+                            this.idDeteccion=deteccionService.findLastId(); ObjectDetectionResult detectionResult = new ObjectDetectionResult(cx, cy, width, height, confianzaMaxima, "Barco",this.idDeteccion);
                             results.add(detectionResult);
                             // Dibujar la detección en la imagen
                             Graphics2D graphics = image.createGraphics();
@@ -1187,7 +1187,7 @@ public class ObjectDetectionService {
                     }
 
                     // Procesar si la confianza máxima es suficiente
-                    if (maxConfidence >= 0.3) {
+                    if (maxConfidence >= 0.41) {
                         String classLabel = classLabels[detectedClassIndex];
 
                         // Convertir coordenadas de centro a esquinas
