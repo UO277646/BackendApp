@@ -33,6 +33,10 @@ public class DeteccionController {
                         ))
                 .collect(Collectors.toList());
     }
+    @GetMapping("/imagen/{proyecto}/{dia}")
+    public String getDetectionsByFotoId(@PathVariable Long proyecto, @PathVariable Date dia) {
+        return deteccionService.getImagenDia(proyecto,dia);
+    }
 
     // Método para obtener detecciones por proyecto y día (fecha)
     @GetMapping("/get/{proyecto}/{dia}")

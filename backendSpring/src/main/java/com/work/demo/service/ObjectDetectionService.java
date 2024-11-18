@@ -1474,35 +1474,38 @@ public class ObjectDetectionService {
                             graphics.setColor(Color.RED);
                             graphics.setStroke(new java.awt.BasicStroke(3));
 
-                            // Dibujar el rectángulo (caja delimitadora)
+// Dibujar el rectángulo (caja delimitadora)
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
 
-                            // Crear el texto con la clase y la confianza (redondeada a dos decimales)
-                            // Crear el texto con la clase y la confianza (redondeada a dos decimales)
-                            String label = String.format("%d.-%s: %.2f",this.idDeteccion, "Montacargas", confidence);
+// Crear el texto con la clase y la confianza (redondeada a dos decimales)
+                            String label = String.format("%d.-%s: %.2f", this.idDeteccion, "Montacargas", confidence);
 
-                            // Dibujar el texto sobre la imagen, justo encima de la caja
+// Configurar la fuente
                             Font font = new Font("Arial", Font.BOLD, 16);
                             graphics.setFont(font);
 
-                            // Obtener las métricas de texto para calcular el tamaño del fondo
+// Obtener las métricas de texto para calcular el tamaño del fondo
                             FontMetrics metrics = graphics.getFontMetrics(font);
                             int textWidth = metrics.stringWidth(label);
                             int textHeight = metrics.getHeight();
 
-                            // Establecer color del fondo (amarillo)
-                            graphics.setColor(Color.RED);
+// Calcular la posición del texto (esquina inferior izquierda)
+                            int textX = (int) x1;
+                            int textY = (int) y2 - 5; // Ajustar para que quede justo dentro del borde inferior
 
-                            // Dibujar un rectángulo como fondo del texto
-                            graphics.fillRect((int) x1, (int) y1 - textHeight, textWidth, textHeight);
+// Establecer color del fondo (rojo con transparencia)
+                            graphics.setColor(new Color(255, 0, 0, 200)); // Rojo semitransparente
 
-                            // Establecer color de la letra (blanco)
-                            graphics.setColor(Color.BLACK);
+// Dibujar un rectángulo como fondo del texto
+                            graphics.fillRect(textX, textY - textHeight, textWidth, textHeight);
 
-                            // Dibujar el texto encima del fondo amarillo
-                            graphics.drawString(label, (int) x1, (int) y1 - 5);
+// Establecer color de la letra (blanco)
+                            graphics.setColor(Color.WHITE);
 
-                            // Liberar los recursos gráficos
+// Dibujar el texto encima del fondo rojo
+                            graphics.drawString(label, textX, textY - 5);
+
+// Liberar los recursos gráficos
                             graphics.dispose();
                         }
                     }
@@ -1539,10 +1542,16 @@ public class ObjectDetectionService {
         return resizedImage;
     }
 
-    public ObjetoImagen performAllDetections (MultipartFile image, Long proyectId) {
+    public ObjetoImagen performAllDetections (MultipartFile image, Long proyectId) throws IOException {
         if(image==null || proyectId==null){
             throw new RuntimeException("Error al detectar imagenes");
         }
+
+        String outputImagePath = "C:\\Users\\user\\Desktop\\"+proyectId+"_"+new Date(System.currentTimeMillis())+".jpg";
+        File outputfile = new File(outputImagePath);
+        ImageIO.write(resizeImage(ImageUtils.convertMultipartFileToBufferedImage(image), 640, 640), "jpg", outputfile);
+
+        System.out.println("Imagen guardada en: " + outputImagePath);
         this.idDeteccion=deteccionService.findLastId();
         List<ObjectDetectionResult> combinedResults = new ArrayList<>();
         Optional<Proyecto> p=proyectoRepository.findById(proyectId);
@@ -1600,10 +1609,6 @@ public class ObjectDetectionService {
                         .append("Ancho: ").append(resultado.getWeight()).append(", ")
                         .append("Alto: ").append(resultado.getHeight()).append(")\n\n");
             }
-            LocalDate localDate=LocalDate.now();
-            //java.sql.Date fechaActual=Date.valueOf(localDate);
-            //emailService.enviarCorreo(usuario.getEmail(), "Estado detecciones dia: " + fechaActual, cuerpoCorreo.toString());
-            // Devolver la lista combinada de todas las detecciones
         }return obj;
     }
 

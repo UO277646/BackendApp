@@ -63,7 +63,12 @@ public class ObjectDetectionController {
     }
 
     private ObjetoImagen performObjectDetection(MultipartFile image, Long proyectId) {
-         return obj.performAllDetections(image,proyectId);
+
+        try {
+            return obj.performAllDetections(image,proyectId);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 
