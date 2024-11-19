@@ -16,4 +16,6 @@ public interface FallosRepository extends JpaRepository<Fallo,Long> {
             "WHERE r.proyecto.idProyecto = :code " +
             "AND f.fecha = :fechaDeteccion")
     List<Fallo> findFallosByProyectoIdAndFechaDeteccion (Long code, Date fechaDeteccion);
+    @Query("SELECT COUNT(f) FROM Fallo f WHERE f.restriccion.idRestriccion = :idRestriccion")
+    long countByRestriccionId (Long idRestriccion);
 }

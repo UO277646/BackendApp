@@ -26,6 +26,7 @@ public class AuthController {
     @PostMapping("/verify")
     public TokenRequestDto verifyToken(@RequestBody TokenRequestDto tokenRequest) {
         try {
+
             // Llama al servicio que valida el token y genera el JWT
             String jwt = tokenValidatorService.verify(tokenRequest.getToken());
             TokenRequestDto t=new TokenRequestDto();

@@ -88,15 +88,36 @@ public class FallosService {
             throw new InvalidParameterException("Error al actualizar el fallo con ID: " + falloId, e);
         }
     }
-
+    @Transactional
     // Método para eliminar un fallo por su ID
     public void eliminarFallo(Long falloId) {
         try {
-            if (fallosRepository.existsById(falloId)) {
-                fallosRepository.deleteById(falloId);
-            } else {
+            // Verifica si el fallo existe
+            if (!fallosRepository.existsById(falloId)) {
                 throw new InvalidParameterException("No se puede eliminar, fallo no encontrado con ID: " + falloId);
             }
+
+            // Obtener el fallo a eliminar
+            Fallo fallo = fallosRepository.findById(falloId)
+                    .orElseThrow(() -> new InvalidParameterException("Fallo no encontrado con ID: " + falloId));
+
+            // Obtener la restricción asociada al fallo
+            Restriccion restriccion = fallo.getRestriccion();
+            if (restriccion != null) {
+                long fallosRestantes = fallosRepository.countByRestriccionId(restriccion.getIdRestriccion());
+                if (fallosRestantes == 1) {
+                    if(restriccion.getDiaria()){
+                        restriccion.setCumplida(null);
+                        restriccionRepository.save(restriccion);
+                    }else {
+                        restriccion.setCumplida(true);
+                        restriccionRepository.save(restriccion);
+                    }
+                }
+            }
+            // Eliminar el fallo
+            fallosRepository.deleteById(falloId);
+
         } catch (Exception e) {
             throw new InvalidParameterException("Error al eliminar el fallo con ID: " + falloId, e);
         }
