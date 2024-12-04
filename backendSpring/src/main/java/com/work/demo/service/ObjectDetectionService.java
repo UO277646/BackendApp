@@ -209,11 +209,8 @@ public class ObjectDetectionService {
 
 
                 // Guardar la imagen con el recuadro en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_cone_image.jpg";
+
             this.imagen=image;
-            File outputfile = new File(outputImagePath);
-            ImageIO.write(image, "jpg", outputfile);
-            System.out.println("Imagen guardada en: " + outputImagePath);
             // Liberar los recursos
             inputTensor.close();
             outputTensor.close();
@@ -341,11 +338,8 @@ public class ObjectDetectionService {
             }
 
             // Guardar la imagen con las detecciones en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_vehicle_image.jpg";
             this.imagen=image;
-            File outputfile = new File(outputImagePath);
-            ImageIO.write(image, "jpg", outputfile);
-            System.out.println("Imagen guardada en: " + outputImagePath);
+
 
             // Liberar los recursos
             inputTensor.close();
@@ -459,11 +453,9 @@ public class ObjectDetectionService {
             }
 
             // Guardar la imagen con el recuadro en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_grua_image.jpg";
+
             this.imagen=image;
-            File outputfile = new File(outputImagePath);
-            ImageIO.write(image, "jpg", outputfile);
-            System.out.println("Imagen guardada en: " + outputImagePath);
+
 
             // Liberar los recursos
             inputTensor.close();
@@ -592,11 +584,8 @@ public class ObjectDetectionService {
             }
 
             // Guardar la imagen con el recuadro en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_pallet_image.jpg";
+
             this.imagen=image;
-            File outputfile = new File(outputImagePath);
-            ImageIO.write(image, "jpg", outputfile);
-            System.out.println("Imagen guardada en: " + outputImagePath);
 
             // Liberar los recursos
             inputTensor.close();
@@ -710,11 +699,9 @@ public class ObjectDetectionService {
             }
 
             // Guardar la imagen con el recuadro en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_camion_image.jpg";
+
             this.imagen=image;
-            File outputfile = new File(outputImagePath);
-            ImageIO.write(image, "jpg", outputfile);
-            System.out.println("Imagen guardada en: " + outputImagePath);
+
 
             // Liberar los recursos
             inputTensor.close();
@@ -836,11 +823,9 @@ public class ObjectDetectionService {
             }
 
             // Guardar la imagen con el recuadro en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_barco_image.jpg";
+
             this.imagen=image;
-            File outputfile = new File(outputImagePath);
-            ImageIO.write(image, "jpg", outputfile);
-            System.out.println("Imagen guardada en: " + outputImagePath);
+
 
             // Liberar los recursos
             inputTensor.close();
@@ -978,11 +963,9 @@ public class ObjectDetectionService {
             }
 
             // Guardar la imagen con el recuadro en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_tubo_image.jpg";
+
             this.imagen=image;
-            File outputfile = new File(outputImagePath);
-            ImageIO.write(image, "jpg", outputfile);
-            System.out.println("Imagen guardada en: " + outputImagePath);
+
 
             // Liberar los recursos
             inputTensor.close();
@@ -1115,11 +1098,9 @@ public class ObjectDetectionService {
             }
 
             // Guardar la imagen con el recuadro en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_taladro_image.jpg";
+
             this.imagen=image;
-            File outputfile = new File(outputImagePath);
-            ImageIO.write(image, "jpg", outputfile);
-            System.out.println("Imagen guardada en: " + outputImagePath);
+
 
             // Liberar los recursos
             inputTensor.close();
@@ -1220,19 +1201,39 @@ public class ObjectDetectionService {
                             results.add(detectionResult);
                             // Dibujar la detección en la imagen
                             Graphics2D graphics = image.createGraphics();
-                            graphics.setColor(Color.CYAN);
+
+// Configurar el estilo del rectángulo (caja delimitadora)
+                            graphics.setColor(Color.CYAN); // Color de los bordes del rectángulo
                             graphics.setStroke(new java.awt.BasicStroke(3));
                             graphics.drawRect((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+
+// Crear el texto con la clase y la confianza
                             String label = String.format("%d.-%s: %.2f", this.idDeteccion, classLabel, maxConfidence);
 
+// Configurar la fuente
                             Font font = new Font("Arial", Font.BOLD, 16);
                             graphics.setFont(font);
                             FontMetrics metrics = graphics.getFontMetrics(font);
 
-                            int textX = (int) x1 + 5;  // Margen de 5 píxeles desde el borde izquierdo de la caja
-                            int textY = (int) y1 + (int) (y2 - y1) - 5;  // Margen de 5 píxeles desde el borde inferior de la caja
+// Calcular el tamaño y la posición del texto
+                            int textWidth = metrics.stringWidth(label);
+                            int textHeight = metrics.getHeight();
+                            int textX = (int) x1 + 5; // Margen de 5 píxeles desde el borde izquierdo de la caja
+                            int textY = (int) y2 - 5; // Margen de 5 píxeles desde el borde inferior de la caja
 
+// Dibujar el fondo negro detrás del texto
+                            graphics.setColor(Color.BLACK);
+                            graphics.fillRect(textX - 2, textY - textHeight, textWidth + 4, textHeight);
+
+// Dibujar el texto con fondo cian
+                            graphics.setColor(Color.CYAN);
+                            graphics.fillRect(textX - 2, textY - textHeight, textWidth + 4, textHeight);
+
+// Dibujar el texto con letra negra encima
+                            graphics.setColor(Color.BLACK);
                             graphics.drawString(label, textX, textY);
+
+// Liberar los recursos gráficos
                             graphics.dispose();
                         }
                     }
@@ -1240,11 +1241,9 @@ public class ObjectDetectionService {
             }
 
             // Guardar la imagen con el recuadro en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_tubo_image.jpg";
+
             this.imagen = image;
-            File outputfile = new File(outputImagePath);
-            ImageIO.write(image, "jpg", outputfile);
-            System.out.println("Imagen guardada en: " + outputImagePath);
+
 
             // Liberar los recursos
             inputTensor.close();
@@ -1375,11 +1374,9 @@ public class ObjectDetectionService {
             }
 
             // Guardar la imagen con el recuadro en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_person_image.jpg";
+
             this.imagen=image;
-            File outputfile = new File(outputImagePath);
-            ImageIO.write(image, "jpg", outputfile);
-            System.out.println("Imagen guardada en: " + outputImagePath);
+
 
             // Liberar los recursos
             inputTensor.close();
@@ -1513,11 +1510,9 @@ public class ObjectDetectionService {
             }
 
             // Guardar la imagen con el recuadro en el disco
-            String outputImagePath = "C:\\Users\\user\\Desktop\\detected_montacargas_image.jpg";
+
             this.imagen=image;
-            File outputfile = new File(outputImagePath);
-            ImageIO.write(image, "jpg", outputfile);
-            System.out.println("Imagen guardada en: " + outputImagePath);
+
 
             // Liberar los recursos
             inputTensor.close();
@@ -1547,11 +1542,6 @@ public class ObjectDetectionService {
             throw new RuntimeException("Error al detectar imagenes");
         }
 
-        String outputImagePath = "C:\\Users\\user\\Desktop\\"+proyectId+"_"+new Date(System.currentTimeMillis())+".jpg";
-        File outputfile = new File(outputImagePath);
-        ImageIO.write(resizeImage(ImageUtils.convertMultipartFileToBufferedImage(image), 640, 640), "jpg", outputfile);
-
-        System.out.println("Imagen guardada en: " + outputImagePath);
         this.idDeteccion=deteccionService.findLastId();
         List<ObjectDetectionResult> combinedResults = new ArrayList<>();
         Optional<Proyecto> p=proyectoRepository.findById(proyectId);
